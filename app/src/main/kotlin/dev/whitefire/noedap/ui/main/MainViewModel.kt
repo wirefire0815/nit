@@ -43,6 +43,10 @@ class MainViewModel(
     private val _breakMinutes = MutableStateFlow(0)
     val breakMinutes = _breakMinutes.asStateFlow()
     
+    // State for notes
+    private val _notes = MutableStateFlow("")
+    val notes = _notes.asStateFlow()
+    
     // State for auto-calculate break
     private val _autoCalculateBreak = MutableStateFlow(true)
     val autoCalculateBreak = _autoCalculateBreak.asStateFlow()
@@ -103,6 +107,14 @@ class MainViewModel(
         }
     }
     
+    private fun refreshWeekStats() {
+        viewModelScope.launch {
+            val week = workDayRepository.getCurrentWeek()
+            _currentWeek.value = week
+            _stats.value = workDayRepository.getCurrentWeekStats()
+        }
+    }
+    
     fun setDate(date: LocalDate) {
         _currentDate.value = date
         viewModelScope.launch {
@@ -111,11 +123,18 @@ class MainViewModel(
                 _startTime.value = day.startTime
                 _endTime.value = day.endTime
                 _breakMinutes.value = day.breakMinutes
+                _notes.value = day.notes
             } ?: run {
                 _startTime.value = null
                 _endTime.value = null
                 _breakMinutes.value = 0
+                _notes.value = ""
             }
+            
+            // Load the week for this date
+            val week = workDayRepository.getWorkWeekForDate(date)
+            _currentWeek.value = week
+            _stats.value = workDayRepository.getCurrentWeekStats()
         }
     }
     
@@ -136,6 +155,10 @@ class MainViewModel(
     
     fun setBreakMinutes(minutes: Int) {
         _breakMinutes.value = minutes.coerceAtLeast(0)
+    }
+    
+    fun setNotes(notes: String) {
+        _notes.value = notes
     }
     
     private fun calculateBreak() {
@@ -192,12 +215,13 @@ class MainViewModel(
     /**
      * Save the current work day
      */
-    fun saveWorkDay(notes: String = "") {
+    fun saveWorkDay() {
         viewModelScope.launch {
             val date = _currentDate.value
             val start = _startTime.value
             val end = _endTime.value
             val breakMin = _breakMinutes.value
+            val notes = _notes.value
             
             val workDay = WorkDay(
                 date = date,
@@ -208,11 +232,7 @@ class MainViewModel(
             )
             
             workDayRepository.saveWorkDay(workDay)
-            
-            // Refresh current week and stats
-            val week = workDayRepository.getCurrentWeek()
-            _currentWeek.value = week
-            _stats.value = workDayRepository.getCurrentWeekStats()
+            refreshWeekStats()
         }
     }
     
@@ -224,15 +244,14 @@ class MainViewModel(
             val date = _currentDate.value
             workDayRepository.deleteWorkDay(date)
             
-            // Reset current day inputs
-            _startTime.value = null
-            _endTime.value = null
-            _breakMinutes.value = 0
+            // Reset current day inputs only if we're on today
+            if (date == LocalDate.now()) {
+                _startTime.value = null
+                _endTime.value = null
+                _breakMinutes.value = 0
+            }
             
-            // Refresh current week and stats
-            val week = workDayRepository.getCurrentWeek()
-            _currentWeek.value = week
-            _stats.value = workDayRepository.getCurrentWeekStats()
+            refreshWeekStats()
         }
     }
     

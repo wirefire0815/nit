@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnCalculate.setOnClickListener {
-            viewModel.saveWorkDay(binding.etNotes.text.toString())
+            viewModel.saveWorkDay()
             showToast("Saved")
         }
 
@@ -79,6 +79,10 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnToday.setOnClickListener {
             viewModel.setDate(LocalDate.now())
+        }
+
+        binding.etNotes.addTextChangedListener { text ->
+            viewModel.setNotes(text.toString())
         }
 
         binding.bottomNav.setOnItemSelectedListener { item ->
@@ -120,6 +124,13 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     viewModel.breakMinutes.collect { minutes ->
                         binding.tvBreakValue.text = minutes.minutesToDisplayString()
+                    }
+                }
+                launch {
+                    viewModel.notes.collect { notes ->
+                        if (binding.etNotes.text.toString() != notes) {
+                            binding.etNotes.setText(notes)
+                        }
                     }
                 }
                 launch {
