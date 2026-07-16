@@ -16,4 +16,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
- 
+include(":app")

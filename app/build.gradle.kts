@@ -6,12 +6,16 @@ plugins {
 
 android {
     namespace = "dev.whitefire.nit"
-    compileSdk = libs.versions.compileSdk.toInt()
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "dev.whitefire.nit"
         minSdk = libs.versions.minSdk.toInt()
-        targetSdk = libs.versions.TargetSdk.toInt()
+        targetSdk = libs.versions.targetSdk.toInt()
         versionCode = 1
         versionName = "1.0.0"
 
@@ -20,30 +24,14 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-        debug {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            optimization {
+                enable = false
+            }
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs += ["-Xjsr305=strict"]
-    }
-    buildFeatures {
-        viewBinding = true
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 

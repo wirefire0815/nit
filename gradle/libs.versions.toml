@@ -20,7 +20,7 @@ junit = "4.13.2"
 kotlin = "2.0.0"
 kotlinxCoroutines = "1.8.0"
 minSdk = "26"
-TargetSdk = "35"
+targetSdk = "35"
 threetenbp = "1.7.2"
 
 [libraries]
