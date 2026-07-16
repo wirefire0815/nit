@@ -98,6 +98,7 @@ class MainViewModel(
                     _startTime.value = workDay.startTime
                     _endTime.value = workDay.endTime
                     _breakMinutes.value = workDay.breakMinutes
+                    _notes.value = workDay.notes
                 }
                 
                 _uiState.value = UiState.Success
@@ -155,10 +156,12 @@ class MainViewModel(
     
     fun setBreakMinutes(minutes: Int) {
         _breakMinutes.value = minutes.coerceAtLeast(0)
+        _currentWeek.value?.let { updateCurrentWeekWithInputs(it) }
     }
     
     fun setNotes(notes: String) {
         _notes.value = notes
+        _currentWeek.value?.let { updateCurrentWeekWithInputs(it) }
     }
     
     private fun calculateBreak() {
@@ -189,6 +192,7 @@ class MainViewModel(
         val start = _startTime.value
         val end = _endTime.value
         val breakMin = _breakMinutes.value
+        val notes = _notes.value
         
         if (start != null && end != null && currentDate != null) {
             val newDay = WorkDay(
@@ -196,7 +200,7 @@ class MainViewModel(
                 startTime = start,
                 endTime = end,
                 breakMinutes = breakMin,
-                notes = ""
+                notes = notes
             )
             _currentWeek.value = week.withWorkDay(newDay)
         }
@@ -244,12 +248,11 @@ class MainViewModel(
             val date = _currentDate.value
             workDayRepository.deleteWorkDay(date)
             
-            // Reset current day inputs only if we're on today
-            if (date == LocalDate.now()) {
-                _startTime.value = null
-                _endTime.value = null
-                _breakMinutes.value = 0
-            }
+            // Reset current day inputs
+            _startTime.value = null
+            _endTime.value = null
+            _breakMinutes.value = 0
+            _notes.value = ""
             
             refreshWeekStats()
         }
