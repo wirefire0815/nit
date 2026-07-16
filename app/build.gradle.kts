@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.whitefire.noedap"
+    namespace = "dev.whitefire.nit"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "dev.whitefire.noedap"
+        applicationId = "dev.whitefire.nit"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

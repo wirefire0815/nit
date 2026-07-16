@@ -1,4 +1,4 @@
-rootProject.name = "noedap"
+rootProject.name = "nit"
 
 pluginManagement {
     repositories {

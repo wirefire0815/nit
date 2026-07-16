@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.ui.history
+package dev.whitefire.nit.ui.history
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,18 +10,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import dev.whitefire.noedap.NoedapApplication
-import dev.whitefire.noedap.databinding.ActivityHistoryBinding
-import dev.whitefire.noedap.databinding.ItemWorkDayBinding
-import dev.whitefire.noedap.domain.model.WorkDay
-import dev.whitefire.noedap.util.formatHours
+import dev.whitefire.nit.NitApplication
+import dev.whitefire.nit.databinding.ActivityHistoryBinding
+import dev.whitefire.nit.databinding.ItemWorkDayBinding
+import dev.whitefire.nit.domain.model.WorkDay
+import dev.whitefire.nit.util.formatHours
 import kotlinx.coroutines.launch
 
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryBinding
     private val viewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory((application as NoedapApplication).workDayRepository)
+        HistoryViewModelFactory((application as NitApplication).workDayRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

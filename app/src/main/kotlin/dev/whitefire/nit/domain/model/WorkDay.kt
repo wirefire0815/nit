@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.domain.model
+package dev.whitefire.nit.domain.model
 
 import java.time.DayOfWeek
 import java.time.Duration

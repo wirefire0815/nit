@@ -1,12 +1,12 @@
-package dev.whitefire.noedap.ui.main
+package dev.whitefire.nit.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.whitefire.noedap.data.repository.UserPreferencesRepository
-import dev.whitefire.noedap.data.repository.WorkDayRepository
-import dev.whitefire.noedap.domain.model.WorkDay
-import dev.whitefire.noedap.domain.model.WorkTimeConfig
-import dev.whitefire.noedap.domain.model.WorkWeek
+import dev.whitefire.nit.data.repository.UserPreferencesRepository
+import dev.whitefire.nit.data.repository.WorkDayRepository
+import dev.whitefire.nit.domain.model.WorkDay
+import dev.whitefire.nit.domain.model.WorkTimeConfig
+import dev.whitefire.nit.domain.model.WorkWeek
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

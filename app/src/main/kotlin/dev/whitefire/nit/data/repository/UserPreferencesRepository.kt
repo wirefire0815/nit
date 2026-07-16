@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.data.repository
+package dev.whitefire.nit.data.repository
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -9,7 +9,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import dev.whitefire.noedap.domain.model.WorkTimeConfig
+import dev.whitefire.nit.domain.model.WorkTimeConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalTime
@@ -20,7 +20,7 @@ import java.time.LocalTime
 class UserPreferencesRepository private constructor(
     private val context: Context
 ) {
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "noedap_prefs")
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "nit_prefs")
     private val dataStore = context.dataStore
     
     companion object {

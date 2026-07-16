@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.ui.settings
+package dev.whitefire.nit.ui.settings
 
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -6,10 +6,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import dev.whitefire.noedap.NoedapApplication
-import dev.whitefire.noedap.databinding.ActivitySettingsBinding
-import dev.whitefire.noedap.util.formatTime
-import dev.whitefire.noedap.util.showTimePicker
+import dev.whitefire.nit.NitApplication
+import dev.whitefire.nit.databinding.ActivitySettingsBinding
+import dev.whitefire.nit.util.formatTime
+import dev.whitefire.nit.util.showTimePicker
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -18,7 +18,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private val viewModel: SettingsViewModel by viewModels {
-        SettingsViewModelFactory((application as NoedapApplication).preferencesRepository)
+        SettingsViewModelFactory((application as NitApplication).preferencesRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

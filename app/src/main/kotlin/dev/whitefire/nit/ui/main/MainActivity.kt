@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.ui.main
+package dev.whitefire.nit.ui.main
 
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -6,13 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import dev.whitefire.noedap.NoedapApplication
-import dev.whitefire.noedap.databinding.ActivityMainBinding
-import dev.whitefire.noedap.ui.history.HistoryActivity
-import dev.whitefire.noedap.ui.settings.SettingsActivity
-import dev.whitefire.noedap.util.formatHours
-import dev.whitefire.noedap.util.formatShortDate
-import dev.whitefire.noedap.util.showTimePicker
+import dev.whitefire.nit.NitApplication
+import dev.whitefire.nit.databinding.ActivityMainBinding
+import dev.whitefire.nit.ui.history.HistoryActivity
+import dev.whitefire.nit.ui.settings.SettingsActivity
+import dev.whitefire.nit.util.formatHours
+import dev.whitefire.nit.util.formatShortDate
+import dev.whitefire.nit.util.showTimePicker
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,8 +22,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels {
         MainViewModelFactory(
-            (application as NoedapApplication).workDayRepository,
-            (application as NoedapApplication).preferencesRepository
+            (application as NitApplication).workDayRepository,
+            (application as NitApplication).preferencesRepository
         )
     }
 

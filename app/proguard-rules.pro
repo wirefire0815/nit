@@ -14,8 +14,8 @@
 -keep class * extends androidx.room.Dao { *; }
 
 # Keep model classes for Room
--keep class dev.whitefire.noedap.domain.model.** { *; }
--keep class dev.whitefire.noedap.data.local.** { *; }
+-keep class dev.whitefire.nit.domain.model.** { *; }
+-keep class dev.whitefire.nit.data.local.** { *; }
 
 # DataStore
 -keep class androidx.datastore.** { *; }

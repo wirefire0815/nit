@@ -1,14 +1,14 @@
-package dev.whitefire.noedap
+package dev.whitefire.nit
 
 import android.app.Application
-import dev.whitefire.noedap.data.local.AppDatabase
-import dev.whitefire.noedap.data.repository.UserPreferencesRepository
-import dev.whitefire.noedap.data.repository.WorkDayRepository
+import dev.whitefire.nit.data.local.AppDatabase
+import dev.whitefire.nit.data.repository.UserPreferencesRepository
+import dev.whitefire.nit.data.repository.WorkDayRepository
 
 /**
- * Custom Application class for Noedap
+ * Custom Application class for nit
  */
-class NoedapApplication : Application() {
+class NitApplication : Application() {
     
     val database: AppDatabase by lazy {
         AppDatabase.getInstance(this)

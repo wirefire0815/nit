@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Noedap</string>
+    <string name="app_name">nit</string>
     <string name="today">Today worked:</string>
     <string name="this_week">This week:</string>
     <string name="remaining">Remaining:</string>

@@ -1,8 +1,10 @@
-# noedap
+# nit
 
 Because your brain is bad at math and your phone's calculator won't remember yesterday's hours.
 
-**noedap** is a simple work hour calculator for flexible schedules. Input your start and end times, it calculates your net hours (with breaks), and shows how today affects your weekly total. No live tracking, no timer - just straightforward number crunching.
+**nit** is a simple work hour calculator for flexible schedules. Input your start and end times, it calculates your net hours (with breaks), and shows how today affects your weekly total. No live tracking, no timer - just straightforward number crunching.
+
+nit: nit Isn't Timer
 
 ## Features
 

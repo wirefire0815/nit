@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.data.local
+package dev.whitefire.nit.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert

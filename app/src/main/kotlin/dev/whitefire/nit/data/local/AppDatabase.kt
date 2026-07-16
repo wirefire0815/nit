@@ -1,4 +1,4 @@
-package dev.whitefire.noedap.data.local
+package dev.whitefire.nit.data.local
 
 import android.content.Context
 import androidx.room.AutoMigration
@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 /**
- * Room database for the Noedap application
+ * Room database for the nit application
  */
 @Database(
     entities = [WorkDayEntity::class],
@@ -24,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun workDayDao(): WorkDayDao
     
     companion object {
-        private const val DATABASE_NAME = "noedap-db"
+        private const val DATABASE_NAME = "nit-db"
         
         @Volatile
         private var INSTANCE: AppDatabase? = null

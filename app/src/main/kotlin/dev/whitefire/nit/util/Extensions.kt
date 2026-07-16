@@ -1,11 +1,11 @@
-package dev.whitefire.noedap.util
+package dev.whitefire.nit.util
 
 import android.app.TimePickerDialog
 import android.content.Context
 import android.widget.EditText
 import android.widget.Toast
-import dev.whitefire.noedap.data.local.WorkDayEntity
-import dev.whitefire.noedap.domain.model.WorkDay
+import dev.whitefire.nit.data.local.WorkDayEntity
+import dev.whitefire.nit.domain.model.WorkDay
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

@@ -1,11 +1,11 @@
-package dev.whitefire.noedap.data.repository
+package dev.whitefire.nit.data.repository
 
-import dev.whitefire.noedap.data.local.WorkDayDao
-import dev.whitefire.noedap.data.local.WorkDayEntity
-import dev.whitefire.noedap.domain.model.WorkDay
-import dev.whitefire.noedap.domain.model.WorkWeek
-import dev.whitefire.noedap.util.toEntity
-import dev.whitefire.noedap.util.toModel
+import dev.whitefire.nit.data.local.WorkDayDao
+import dev.whitefire.nit.data.local.WorkDayEntity
+import dev.whitefire.nit.domain.model.WorkDay
+import dev.whitefire.nit.domain.model.WorkWeek
+import dev.whitefire.nit.util.toEntity
+import dev.whitefire.nit.util.toModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
