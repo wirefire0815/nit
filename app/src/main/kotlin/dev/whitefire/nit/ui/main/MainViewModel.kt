@@ -60,6 +60,10 @@ class MainViewModel(
     private val _workTimeConfig = MutableStateFlow<WorkTimeConfig?>(null)
     val workTimeConfig: StateFlow<WorkTimeConfig?> = _workTimeConfig.asStateFlow()
     
+    // Onboarding state
+    private val _isOnboardingCompleted = MutableStateFlow(true)
+    val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
+
     // UI state
     sealed class UiState {
         object Loading : UiState()
@@ -81,11 +85,19 @@ class MainViewModel(
     private fun loadData() {
         viewModelScope.launch {
             try {
+                // Collect onboarding state
+                launch {
+                    preferencesRepository.onboardingCompletedFlow.collect { completed ->
+                        _isOnboardingCompleted.value = completed
+                    }
+                }
+
                 // Load work time config
                 preferencesRepository.workTimeConfigFlow
                     .collect { config ->
                         _workTimeConfig.value = config
                         _autoCalculateBreak.value = preferencesRepository.autoCalculateBreakFlow.first()
+                        refreshWeekStats()
                     }
                 
                 // Load current week
@@ -358,47 +370,58 @@ class MainViewModel(
         }
     }
     
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            preferencesRepository.setOnboardingCompleted(true)
+        }
+    }
+
+    fun setFridayExitMode(mode: WorkTimeConfig.FridayExitMode) {
+        val currentConfig = _workTimeConfig.value ?: return
+        viewModelScope.launch {
+            preferencesRepository.setWorkTimeConfig(currentConfig.copy(fridayTargetMode = mode))
+        }
+    }
+
+    fun setEnableKernzeiten(enabled: Boolean) {
+        val currentConfig = _workTimeConfig.value ?: return
+        viewModelScope.launch {
+            preferencesRepository.setWorkTimeConfig(currentConfig.copy(enableKernzeiten = enabled))
+        }
+    }
+
     /**
-     * Calculate when you can leave today to meet weekly target
-     * Returns LocalTime or null if target already met
+     * Get current weekly schedule projection
+     */
+    fun getScheduleProjection(): WorkWeek.ScheduleProjection? {
+        val week = _currentWeek.value ?: return null
+        return week.calculateScheduleProjection(_currentDate.value)
+    }
+
+    /**
+     * Calculate when you can leave today to meet today's target (or weekly target)
+     * Returns LocalTime or null if start time is missing
      */
     fun getSuggestedLeaveTime(): LocalTime? {
         val config = _workTimeConfig.value ?: return null
         val start = _startTime.value ?: return null
-        val currentDate = _currentDate.value
         
-        // Get preview stats from current week
-        val previewStats = getCurrentWeekStatsPreview()
-        val remainingHours = previewStats.remainingHours
+        val projection = getScheduleProjection()
+        val todayTargetHours = projection?.todayTargetHours ?: (config.weeklyTargetHours / 5f)
         
-        if (remainingHours <= 0) return null // Target already met
-        
-        // Calculate current today hours from inputs
-        val currentTodayHours = _startTime.value?.let { s ->
-            _endTime.value?.let { e ->
-                val dur = java.time.Duration.between(s, e)
-                if (!dur.isNegative) (dur.toMinutes() - _breakMinutes.value).toFloat() / 60f
-                else 0f
-            } ?: 0f
-        } ?: 0f
-        
-        // Calculate hours needed from current today hours
-        val hoursNeededFromNow = remainingHours - currentTodayHours
-        if (hoursNeededFromNow <= 0) return null
-        
-        // Calculate leave time: start + (currentTodayHours + hoursNeededFromNow) + break
-        val totalHours = currentTodayHours + hoursNeededFromNow
-        val minutesNeeded = (totalHours * 60).toInt()
-        val leaveTime = start.plusMinutes(minutesNeeded.toLong())
-        
-        // Add break if needed
-        val breakRule = config.breakRules.firstOrNull()
-        breakRule?.let { rule ->
-            if (totalHours >= rule.afterHours) {
-                return leaveTime.plusMinutes((rule.durationHours * 60).toLong())
+        if (todayTargetHours <= 0) return null
+
+        val minutesNeeded = (todayTargetHours * 60).toInt()
+        var leaveTime = start.plusMinutes(minutesNeeded.toLong())
+
+        // Add break duration if net work exceeds break threshold
+        for (rule in config.breakRules) {
+            if (todayTargetHours >= rule.afterHours) {
+                leaveTime = leaveTime.plusMinutes((rule.durationHours * 60).toLong())
+                break
             }
         }
-        
+
         return leaveTime
     }
     

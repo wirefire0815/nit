@@ -67,6 +67,18 @@ class SettingsViewModel(
         }
     }
 
+    fun setEnableKernzeiten(enabled: Boolean) {
+        _config.value?.let { current ->
+            _config.value = current.copy(enableKernzeiten = enabled)
+        }
+    }
+
+    fun setFridayExitMode(mode: WorkTimeConfig.FridayExitMode) {
+        _config.value?.let { current ->
+            _config.value = current.copy(fridayTargetMode = mode)
+        }
+    }
+
     fun resetToDefaults() {
         _config.value = WorkTimeConfig()
     }

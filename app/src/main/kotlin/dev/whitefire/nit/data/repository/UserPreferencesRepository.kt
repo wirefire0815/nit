@@ -51,6 +51,10 @@ class UserPreferencesRepository private constructor(
         private val SHOW_BREAK_WARNING = booleanPreferencesKey("show_break_warning")
         private val DARK_MODE = booleanPreferencesKey("dark_mode")
         private val AUTO_CALCULATE_BREAK = booleanPreferencesKey("auto_calculate_break")
+        private val ENABLE_KERNZEITEN = booleanPreferencesKey("enable_kernzeiten")
+        private val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        private val FRIDAY_TARGET_MODE = stringPreferencesKey("friday_target_mode")
+        private val CUSTOM_FRIDAY_TARGET_HOURS = floatPreferencesKey("custom_friday_target_hours")
         
         @Volatile
         private var instance: UserPreferencesRepository? = null
@@ -66,8 +70,18 @@ class UserPreferencesRepository private constructor(
     
     val workTimeConfigFlow: Flow<WorkTimeConfig> = dataStore.data
         .map { preferences ->
+            val modeStr = preferences[FRIDAY_TARGET_MODE] ?: WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT.name
+            val fridayMode = try {
+                WorkTimeConfig.FridayExitMode.valueOf(modeStr)
+            } catch (e: Exception) {
+                WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT
+            }
+
             WorkTimeConfig(
                 weeklyTargetHours = preferences[WEEKLY_TARGET_HOURS] ?: 38.5f,
+                enableKernzeiten = preferences[ENABLE_KERNZEITEN] ?: true,
+                fridayTargetMode = fridayMode,
+                customFridayTargetHours = preferences[CUSTOM_FRIDAY_TARGET_HOURS] ?: 3.0f,
                 coreTimes = mapOf(
                     java.time.DayOfWeek.MONDAY to WorkTimeConfig.CoreTime(
                         LocalTime.of(
@@ -134,6 +148,9 @@ class UserPreferencesRepository private constructor(
     suspend fun setWorkTimeConfig(config: WorkTimeConfig) {
         dataStore.edit { preferences ->
             preferences[WEEKLY_TARGET_HOURS] = config.weeklyTargetHours
+            preferences[ENABLE_KERNZEITEN] = config.enableKernzeiten
+            preferences[FRIDAY_TARGET_MODE] = config.fridayTargetMode.name
+            preferences[CUSTOM_FRIDAY_TARGET_HOURS] = config.customFridayTargetHours
             
             config.coreTimes[java.time.DayOfWeek.MONDAY]?.let { core ->
                 preferences[MON_START_HOUR] = core.start?.hour ?: 9
@@ -178,6 +195,15 @@ class UserPreferencesRepository private constructor(
     }
     
     // UI Preferences
+
+    val onboardingCompletedFlow: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[ONBOARDING_COMPLETED] ?: false }
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[ONBOARDING_COMPLETED] = completed
+        }
+    }
     
     val showBreakWarningFlow: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[SHOW_BREAK_WARNING] ?: true }

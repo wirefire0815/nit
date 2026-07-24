@@ -57,17 +57,20 @@ data class WorkDay(
         get() = startTime != null && endTime != null
     
     /**
-     * Check if work day is within Kernzeit
+     * Check if work day satisfies Kernzeit rules
      */
     fun isInKernzeit(config: WorkTimeConfig = DEFAULT_WORK_CONFIG): Boolean {
-        val coreTime = config.coreTimes[dayOfWeek] ?: return false
-        if (coreTime.start == null || coreTime.end == null) return false
+        if (!config.enableKernzeiten) return true
+        
+        val coreTime = config.coreTimes[dayOfWeek] ?: return true
+        if (coreTime.start == null || coreTime.end == null) return true
         
         val actualStart = startTime ?: return false
         val actualEnd = endTime ?: return false
         
-        return !actualStart.isBefore(coreTime.start) && 
-               !actualEnd.isAfter(coreTime.end)
+        // Start must be at or before core start, and end must be at or after core end
+        return !actualStart.isAfter(coreTime.start) && 
+               !actualEnd.isBefore(coreTime.end)
     }
     
     /**
