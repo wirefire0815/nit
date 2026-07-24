@@ -3,9 +3,6 @@ package dev.whitefire.nit.domain.model
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-/**
- * Configuration for working time rules
- */
 data class WorkTimeConfig(
     /** Target hours per week */
     val weeklyTargetHours: Float = 38.5f,
@@ -13,11 +10,11 @@ data class WorkTimeConfig(
     /** Whether Kernzeiten (core hours) rules are enabled */
     val enableKernzeiten: Boolean = true,
 
-    /** Strategy for Friday finish: EARLY_KERNZEIT, BALANCED, or CUSTOM */
-    val fridayTargetMode: FridayExitMode = FridayExitMode.EARLY_KERNZEIT,
+    /** Strategy for schedule planning across remaining days */
+    val plannerMode: SchedulePlannerMode = SchedulePlannerMode.BALANCED,
 
-    /** Custom net hours target for Friday when in CUSTOM mode */
-    val customFridayTargetHours: Float = 3.0f,
+    /** Custom net hours target for specified focus days */
+    val customTargetHours: Float = 3.0f,
     
     /** Core times (Kernzeiten) per day of week */
     val coreTimes: Map<DayOfWeek, CoreTime> = mapOf(
@@ -32,14 +29,18 @@ data class WorkTimeConfig(
     
     /** Break rules: break duration after X hours of work */
     val breakRules: List<BreakRule> = listOf(
-        BreakRule(6.0f, 0.5f) // 30 min break after 6 hours
+        BreakRule(6.0f, 0.5f)
     )
 ) {
-    enum class FridayExitMode {
-        EARLY_KERNZEIT, // Leave right after Friday core hours (3h 00m net)
-        BALANCED,       // Spread remaining hours equally including Friday
-        CUSTOM          // Custom target hours on Friday
+    enum class SchedulePlannerMode {
+        BALANCED,       // Evenly distribute remaining target hours across remaining work days
+        MIN_CORE_HOURS, // Minimize hours on short/core days (e.g. Friday core hours)
+        CUSTOM          // Custom user-defined target allocation
     }
+
+    // Alias for backward compatibility
+    val fridayTargetMode: SchedulePlannerMode get() = plannerMode
+    val customFridayTargetHours: Float get() = customTargetHours
 
     data class CoreTime(
         val start: LocalTime?, 
@@ -52,7 +53,4 @@ data class WorkTimeConfig(
     )
 }
 
-/**
- * Default configuration for Neuron Automation interns
- */
 val DEFAULT_WORK_CONFIG = WorkTimeConfig()

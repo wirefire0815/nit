@@ -124,7 +124,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Friday Finish Planner"
+                            android:text="Weekly Schedule Planner"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -136,21 +136,21 @@
                             app:singleSelection="true">
 
                             <Button
-                                android:id="@+id/btnModeEarlyFriday"
-                                style="@style/Widget.Material3.Button.OutlinedButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="36dp"
-                                android:paddingHorizontal="10dp"
-                                android:text="Early (12:30)"
-                                android:textSize="11sp" />
-
-                            <Button
                                 android:id="@+id/btnModeBalanced"
                                 style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="36dp"
                                 android:paddingHorizontal="10dp"
                                 android:text="Balanced"
+                                android:textSize="11sp" />
+
+                            <Button
+                                android:id="@+id/btnModeEarlyFriday"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:paddingHorizontal="10dp"
+                                android:text="Core Target"
                                 android:textSize="11sp" />
                         </com.google.android.material.button.MaterialButtonToggleGroup>
                     </LinearLayout>

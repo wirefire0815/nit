@@ -107,12 +107,12 @@
                 android:checked="true" />
         </LinearLayout>
 
-        <!-- Friday Exit Preference -->
+        <!-- Schedule Strategy Preference -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Friday Finish Goal"
+            android:text="Preferred Work Strategy"
             android:textColor="@color/text_primary"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -125,21 +125,21 @@
             app:singleSelection="true">
 
             <Button
-                android:id="@+id/btnOnboardingEarlyFriday"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Early (12:30)"
-                android:textSize="12sp" />
-
-            <Button
                 android:id="@+id/btnOnboardingBalancedFriday"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Balanced"
+                android:text="Balanced Days"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btnOnboardingEarlyFriday"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Core Hours Target"
                 android:textSize="12sp" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 

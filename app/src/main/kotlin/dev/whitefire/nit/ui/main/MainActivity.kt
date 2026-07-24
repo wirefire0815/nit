@@ -175,8 +175,8 @@ class MainActivity : AppCompatActivity() {
         toggleFridayMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
-                    R.id.btnModeEarlyFriday -> viewModel.setFridayExitMode(WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT)
-                    R.id.btnModeBalanced -> viewModel.setFridayExitMode(WorkTimeConfig.FridayExitMode.BALANCED)
+                    R.id.btnModeBalanced -> viewModel.setFridayExitMode(WorkTimeConfig.SchedulePlannerMode.BALANCED)
+                    R.id.btnModeEarlyFriday -> viewModel.setFridayExitMode(WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS)
                 }
                 updateUI()
             }
@@ -212,10 +212,10 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     viewModel.workTimeConfig.collect { config ->
                         config?.let {
-                            if (it.fridayTargetMode == WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT) {
-                                toggleFridayMode.check(R.id.btnModeEarlyFriday)
-                            } else {
+                            if (it.plannerMode == WorkTimeConfig.SchedulePlannerMode.BALANCED) {
                                 toggleFridayMode.check(R.id.btnModeBalanced)
+                            } else {
+                                toggleFridayMode.check(R.id.btnModeEarlyFriday)
                             }
                             updateUI()
                         }

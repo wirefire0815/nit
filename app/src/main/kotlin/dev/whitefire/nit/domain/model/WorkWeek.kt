@@ -137,7 +137,6 @@ data class WorkWeek(
      * Calculate smart schedule projections for remaining work days in the week
      */
     fun calculateScheduleProjection(currentDate: LocalDate = LocalDate.now()): ScheduleProjection {
-        // Only consider Monday-Friday
         val weekMonToFri = (0..4).map { startDate.plusDays(it.toLong()) }
         
         // Sum completed hours for days strictly prior to currentDate
@@ -148,40 +147,10 @@ data class WorkWeek(
 
         val totalRemaining = (config.weeklyTargetHours - pastHours).coerceAtLeast(0f)
 
-        // Remaining work days from currentDate onwards (Mon-Fri)
         val remainingWorkDays = weekMonToFri.filter { !it.isBefore(currentDate) }
         if (remainingWorkDays.isEmpty()) {
-            return ScheduleProjection(0f, 0f, 0f, 0, "Week complete!")
+            return ScheduleProjection(0f, 0f, 0f, 0, "Week target complete!")
         }
-
-        val containsFriday = remainingWorkDays.contains(startDate.plusDays(4))
-
-        // Determine Friday target hours
-        val friTarget = if (!containsFriday) {
-            0f
-        } else {
-            when (config.fridayTargetMode) {
-                WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT -> {
-                    // Default core time net hours for Friday (09:30 - 12:30 = 3h)
-                    val coreFri = config.coreTimes[DayOfWeek.FRIDAY]
-                    if (coreFri?.start != null && coreFri.end != null) {
-                        java.time.Duration.between(coreFri.start, coreFri.end).toMinutes().toFloat() / 60f
-                    } else 3.0f
-                }
-                WorkTimeConfig.FridayExitMode.CUSTOM -> config.customFridayTargetHours
-                WorkTimeConfig.FridayExitMode.BALANCED -> {
-                    totalRemaining / remainingWorkDays.size
-                }
-            }
-        }
-
-        val nonFridayCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
-
-        val nonFriTarget = if (nonFridayCount > 0) {
-            (totalRemaining - friTarget).coerceAtLeast(0f) / nonFridayCount
-        } else 0f
-
-        val todayTarget = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) friTarget else nonFriTarget
 
         fun formatHours(h: Float): String {
             val totalMins = Math.round(h * 60)
@@ -190,12 +159,45 @@ data class WorkWeek(
             return String.format("%dh %02dmin", hrs, mins)
         }
 
-        val summary = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) {
-            "Friday target: ${formatHours(todayTarget)} to reach weekly goal of ${config.weeklyTargetHours}h."
-        } else if (containsFriday && nonFridayCount > 0) {
-            "Work ${formatHours(nonFriTarget)} today & remaining days to leave early on Friday (${formatHours(friTarget)} target)."
-        } else {
-            "Suggested daily target: ${formatHours(todayTarget)} for remaining ${remainingWorkDays.size} day(s)."
+        val containsFriday = remainingWorkDays.contains(startDate.plusDays(4))
+
+        val (todayTarget, friTarget, nonFriTarget, summary) = when (config.plannerMode) {
+            WorkTimeConfig.SchedulePlannerMode.BALANCED -> {
+                val dailyAvg = totalRemaining / remainingWorkDays.size
+                val text = "Work ${formatHours(dailyAvg)} daily across remaining ${remainingWorkDays.size} day(s) to hit ${config.weeklyTargetHours}h target."
+                Tuple4(dailyAvg, dailyAvg, dailyAvg, text)
+            }
+            WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS -> {
+                val friCore = config.coreTimes[DayOfWeek.FRIDAY]
+                val fTarget = if (containsFriday && friCore?.start != null && friCore.end != null) {
+                    java.time.Duration.between(friCore.start, friCore.end).toMinutes().toFloat() / 60f
+                } else 3.0f
+
+                val nonFriCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
+                val nfTarget = if (nonFriCount > 0) {
+                    (totalRemaining - fTarget).coerceAtLeast(0f) / nonFriCount
+                } else 0f
+
+                val tTarget = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) fTarget else nfTarget
+                val text = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) {
+                    "Friday target: ${formatHours(tTarget)} to finish weekly goal of ${config.weeklyTargetHours}h."
+                } else if (containsFriday && nonFriCount > 0) {
+                    "Work ${formatHours(nfTarget)} today & remaining days to finish core hours on Friday (${formatHours(fTarget)})."
+                } else {
+                    "Suggested target: ${formatHours(tTarget)} for remaining ${remainingWorkDays.size} day(s)."
+                }
+                Tuple4(tTarget, fTarget, nfTarget, text)
+            }
+            WorkTimeConfig.SchedulePlannerMode.CUSTOM -> {
+                val cFri = config.customTargetHours
+                val nonFriCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
+                val nfTarget = if (nonFriCount > 0) {
+                    (totalRemaining - cFri).coerceAtLeast(0f) / nonFriCount
+                } else 0f
+                val tTarget = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) cFri else nfTarget
+                val text = "Work ${formatHours(tTarget)} today (${remainingWorkDays.size} day(s) remaining)."
+                Tuple4(tTarget, cFri, nfTarget, text)
+            }
         }
 
         return ScheduleProjection(
@@ -206,6 +208,8 @@ data class WorkWeek(
             summaryText = summary
         )
     }
+
+    private data class Tuple4<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
     
     companion object {
         /**

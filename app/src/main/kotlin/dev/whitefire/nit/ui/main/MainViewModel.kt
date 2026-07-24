@@ -376,10 +376,10 @@ class MainViewModel(
         }
     }
 
-    fun setFridayExitMode(mode: WorkTimeConfig.FridayExitMode) {
+    fun setFridayExitMode(mode: WorkTimeConfig.SchedulePlannerMode) {
         val currentConfig = _workTimeConfig.value ?: return
         viewModelScope.launch {
-            preferencesRepository.setWorkTimeConfig(currentConfig.copy(fridayTargetMode = mode))
+            preferencesRepository.setWorkTimeConfig(currentConfig.copy(plannerMode = mode))
         }
     }
 
