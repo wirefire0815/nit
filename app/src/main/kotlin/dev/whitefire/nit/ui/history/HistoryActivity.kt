@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -15,11 +14,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
 import dev.whitefire.nit.NitApplication
 import dev.whitefire.nit.R
 import dev.whitefire.nit.domain.model.WorkDay
-import dev.whitefire.nit.ui.history.HistoryViewModel.SimpleWeekStats
-import dev.whitefire.nit.util.formatHours
 import kotlinx.coroutines.launch
 
 class HistoryActivity : AppCompatActivity() {
@@ -79,7 +77,8 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun updateStats(workDays: List<WorkDay>) {
         val stats = viewModel.getWeekStats(workDays)
-        tvTotalHours.text = stats.totalHours.formatHours()
+        val totalMins = Math.round(stats.totalHours * 60)
+        tvTotalHours.text = String.format("%02dh %02dm", totalMins / 60, totalMins % 60)
         tvDaysWorked.text = "${stats.daysWorked} days"
     }
 }
@@ -106,11 +105,13 @@ class WorkDayViewHolder(
     private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
     private val tvDuration: TextView = itemView.findViewById(R.id.tvDuration)
     private val tvNotes: TextView = itemView.findViewById(R.id.tvNotes)
-    private val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
+    private val btnDelete: MaterialButton = itemView.findViewById(R.id.btnDelete)
 
     fun bind(workDay: WorkDay) {
         tvDate.text = workDay.getDateDisplay()
-        tvDuration.text = workDay.getDurationString()
+        
+        val netMins = workDay.netDuration?.toMinutes()?.toInt() ?: 0
+        tvDuration.text = String.format("Net Hours: %02dh %02dm", netMins / 60, netMins % 60)
         tvNotes.text = workDay.notes.ifEmpty { "No notes" }
 
         btnDelete.setOnClickListener { onDeleteClick(workDay) }

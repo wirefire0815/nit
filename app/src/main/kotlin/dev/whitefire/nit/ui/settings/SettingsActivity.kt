@@ -1,15 +1,18 @@
 package dev.whitefire.nit.ui.settings
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.materialswitch.MaterialSwitch
 import dev.whitefire.nit.NitApplication
 import dev.whitefire.nit.R
 import dev.whitefire.nit.domain.model.WorkTimeConfig
@@ -27,6 +30,8 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var etWeeklyTarget: EditText
     private lateinit var etBreakAfter: EditText
     private lateinit var etBreakDuration: EditText
+    private lateinit var switchEnableKernzeiten: MaterialSwitch
+    private lateinit var layoutKernzeitDetails: LinearLayout
     private lateinit var btnMonStart: Button
     private lateinit var btnMonEnd: Button
     private lateinit var btnFriStart: Button
@@ -46,6 +51,8 @@ class SettingsActivity : AppCompatActivity() {
         etWeeklyTarget = findViewById(R.id.etWeeklyTarget)
         etBreakAfter = findViewById(R.id.etBreakAfter)
         etBreakDuration = findViewById(R.id.etBreakDuration)
+        switchEnableKernzeiten = findViewById(R.id.switchEnableKernzeiten)
+        layoutKernzeitDetails = findViewById(R.id.layoutKernzeitDetails)
         btnMonStart = findViewById(R.id.btnMonStart)
         btnMonEnd = findViewById(R.id.btnMonEnd)
         btnFriStart = findViewById(R.id.btnFriStart)
@@ -61,16 +68,9 @@ class SettingsActivity : AppCompatActivity() {
         btnSave.setOnClickListener { saveSettings() }
         btnReset.setOnClickListener { resetToDefaults() }
 
-        etWeeklyTarget.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) updateWeeklyTarget()
-        }
-
-        etBreakAfter.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) updateBreakRule()
-        }
-
-        etBreakDuration.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) updateBreakRule()
+        switchEnableKernzeiten.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setEnableKernzeiten(isChecked)
+            layoutKernzeitDetails.visibility = if (isChecked) View.VISIBLE else View.GONE
         }
 
         btnMonStart.setOnClickListener {
@@ -108,7 +108,7 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 launch {
                     viewModel.saveSuccess.collect { success ->
-                        if (success) showToast("Settings saved")
+                        if (success) Toast.makeText(this@SettingsActivity, "Settings saved", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -120,28 +120,27 @@ class SettingsActivity : AppCompatActivity() {
         etBreakAfter.setText(config.breakRules.firstOrNull()?.afterHours?.toString() ?: "6")
         etBreakDuration.setText(config.breakRules.firstOrNull()?.durationHours?.toString() ?: "0.5")
 
+        switchEnableKernzeiten.isChecked = config.enableKernzeiten
+        layoutKernzeitDetails.visibility = if (config.enableKernzeiten) View.VISIBLE else View.GONE
+
         btnMonStart.text = config.coreTimes[DayOfWeek.MONDAY]?.start?.formatTime() ?: "09:30"
         btnMonEnd.text = config.coreTimes[DayOfWeek.MONDAY]?.end?.formatTime() ?: "16:00"
         btnFriStart.text = config.coreTimes[DayOfWeek.FRIDAY]?.start?.formatTime() ?: "09:30"
         btnFriEnd.text = config.coreTimes[DayOfWeek.FRIDAY]?.end?.formatTime() ?: "12:30"
     }
 
-    private fun updateWeeklyTarget() {
-        etWeeklyTarget.text?.toString()?.toFloatOrNull()?.let { target ->
-            viewModel.setWeeklyTarget(target)
-        }
-    }
-
-    private fun updateBreakRule() {
+    private fun saveSettings() {
+        val target = etWeeklyTarget.text?.toString()?.toFloatOrNull() ?: 38.5f
         val after = etBreakAfter.text?.toString()?.toFloatOrNull() ?: 6f
         val duration = etBreakDuration.text?.toString()?.toFloatOrNull() ?: 0.5f
-        viewModel.setBreakRule(after, duration)
-    }
 
-    private fun saveSettings() {
+        viewModel.setWeeklyTarget(target)
+        viewModel.setBreakRule(after, duration)
+
         viewModel.config.value?.let { config ->
             viewModel.saveConfig(config)
         }
+        finish()
     }
 
     private fun resetToDefaults() {
@@ -149,9 +148,5 @@ class SettingsActivity : AppCompatActivity() {
         viewModel.config.value?.let { config ->
             viewModel.saveConfig(config)
         }
-    }
-
-    private fun showToast(message: String) {
-        android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
     }
 }

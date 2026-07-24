@@ -1,9 +1,12 @@
 package dev.whitefire.nit.ui.main
 
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -12,20 +15,22 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.textfield.TextInputEditText
 import dev.whitefire.nit.NitApplication
 import dev.whitefire.nit.R
-import dev.whitefire.nit.data.repository.UserPreferencesRepository
-import dev.whitefire.nit.data.repository.WorkDayRepository
-import dev.whitefire.nit.domain.model.WeekStats
+import dev.whitefire.nit.domain.model.WorkDay
 import dev.whitefire.nit.domain.model.WorkTimeConfig
-import dev.whitefire.nit.domain.model.WorkWeek
 import dev.whitefire.nit.ui.history.HistoryActivity
 import dev.whitefire.nit.ui.settings.SettingsActivity
+import dev.whitefire.nit.util.formatDate
 import dev.whitefire.nit.util.formatHours
-import dev.whitefire.nit.util.formatShortDate
 import dev.whitefire.nit.util.formatTime
-import dev.whitefire.nit.util.minutesToDisplayString
 import dev.whitefire.nit.util.showTimePicker
+import dev.whitefire.nit.util.showToast
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -39,11 +44,11 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private lateinit var etStartTime: EditText
-    private lateinit var etEndTime: EditText
+    private lateinit var btnStartTime: MaterialButton
+    private lateinit var btnEndTime: MaterialButton
+    private lateinit var btnBreakMins: MaterialButton
     private lateinit var etNotes: EditText
     private lateinit var btnCalculate: Button
-    private lateinit var btnDelete: Button
     private lateinit var btnDeleteEntry: Button
     private lateinit var btnDatePrev: Button
     private lateinit var btnDateNext: Button
@@ -55,25 +60,38 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvTodayWorkedValue: TextView
     private lateinit var tvWeekWorkedValue: TextView
     private lateinit var tvRemainingValue: TextView
-    private lateinit var progressBar: ProgressBar
+    private lateinit var progressBar: LinearProgressIndicator
     private lateinit var tvProgressText: TextView
-    private lateinit var tvSuggestedDaily: TextView
+    private lateinit var tvPlannerSummary: TextView
     private lateinit var tvLeaveSuggestion: TextView
+    private lateinit var tvTargetHoursBadge: TextView
+    private lateinit var tvKernzeitBadge: TextView
+    private lateinit var toggleFridayMode: MaterialButtonToggleGroup
+    private lateinit var btnModeEarlyFriday: Button
+    private lateinit var btnModeBalanced: Button
     private lateinit var tvMonHours: TextView
     private lateinit var tvTueHours: TextView
     private lateinit var tvWedHours: TextView
     private lateinit var tvThuHours: TextView
     private lateinit var tvFriHours: TextView
 
+    private var onboardingDialogShown = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        etStartTime = findViewById(R.id.etStartTime)
-        etEndTime = findViewById(R.id.etEndTime)
+        initViews()
+        setupListeners()
+        observeViewModel()
+    }
+
+    private fun initViews() {
+        btnStartTime = findViewById(R.id.btnStartTime)
+        btnEndTime = findViewById(R.id.btnEndTime)
+        btnBreakMins = findViewById(R.id.btnBreakMins)
         etNotes = findViewById(R.id.etNotes)
         btnCalculate = findViewById(R.id.btnCalculate)
-        btnDelete = findViewById(R.id.btnDelete)
         btnDeleteEntry = findViewById(R.id.btnDeleteEntry)
         btnDatePrev = findViewById(R.id.btnDatePrev)
         btnDateNext = findViewById(R.id.btnDateNext)
@@ -87,49 +105,59 @@ class MainActivity : AppCompatActivity() {
         tvRemainingValue = findViewById(R.id.tvRemainingValue)
         progressBar = findViewById(R.id.progressBar)
         tvProgressText = findViewById(R.id.tvProgressText)
-        tvSuggestedDaily = findViewById(R.id.tvSuggestedDaily)
+        tvPlannerSummary = findViewById(R.id.tvPlannerSummary)
         tvLeaveSuggestion = findViewById(R.id.tvLeaveSuggestion)
+        tvTargetHoursBadge = findViewById(R.id.tvTargetHoursBadge)
+        tvKernzeitBadge = findViewById(R.id.tvKernzeitBadge)
+        toggleFridayMode = findViewById(R.id.toggleFridayMode)
+        btnModeEarlyFriday = findViewById(R.id.btnModeEarlyFriday)
+        btnModeBalanced = findViewById(R.id.btnModeBalanced)
         tvMonHours = findViewById(R.id.tvMonHours)
         tvTueHours = findViewById(R.id.tvTueHours)
         tvWedHours = findViewById(R.id.tvWedHours)
         tvThuHours = findViewById(R.id.tvThuHours)
         tvFriHours = findViewById(R.id.tvFriHours)
-
-        setupViews()
-        setupObservers()
     }
 
-    private fun setupViews() {
-        etStartTime.setOnClickListener {
-            etStartTime.showTimePicker(this, viewModel.startTime.value ?: LocalTime.of(9, 30)) { time ->
+    private fun setupListeners() {
+        btnStartTime.setOnClickListener {
+            btnStartTime.showTimePicker(this, viewModel.startTime.value ?: LocalTime.of(9, 30)) { time ->
                 viewModel.setStartTime(time)
-                updateCalculations()
+                updateUI()
             }
         }
 
-        etEndTime.setOnClickListener {
-            etEndTime.showTimePicker(this, viewModel.endTime.value ?: LocalTime.of(16, 0)) { time ->
+        btnEndTime.setOnClickListener {
+            btnEndTime.showTimePicker(this, viewModel.endTime.value ?: LocalTime.of(16, 0)) { time ->
                 viewModel.setEndTime(time)
-                updateCalculations()
+                updateUI()
             }
+        }
+
+        btnBreakMins.setOnClickListener {
+            val options = arrayOf("0m", "15m", "30m", "45m", "60m")
+            val values = intArrayOf(0, 15, 30, 45, 60)
+            AlertDialog.Builder(this)
+                .setTitle("Select Break Duration")
+                .setItems(options) { _, which ->
+                    viewModel.setBreakMinutes(values[which])
+                    updateUI()
+                }
+                .show()
+        }
+
+        etNotes.addTextChangedListener { text ->
+            viewModel.setNotes(text?.toString() ?: "")
         }
 
         btnCalculate.setOnClickListener {
             viewModel.saveWorkDay()
-            showToast("Saved")
-        }
-
-        btnDelete.setOnClickListener {
-            viewModel.setStartTime(null)
-            viewModel.setEndTime(null)
-            viewModel.setBreakMinutes(0)
-            etNotes.setText("")
-            showToast("Cleared")
+            showToast("Work day entry saved")
         }
 
         btnDeleteEntry.setOnClickListener {
             viewModel.deleteWorkDay()
-            showToast("Deleted")
+            showToast("Work day entry deleted")
         }
 
         btnDatePrev.setOnClickListener {
@@ -144,134 +172,209 @@ class MainActivity : AppCompatActivity() {
             viewModel.setDate(LocalDate.now())
         }
 
-        etNotes.addTextChangedListener { text ->
-            viewModel.setNotes(text.toString())
+        toggleFridayMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.btnModeEarlyFriday -> viewModel.setFridayExitMode(WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT)
+                    R.id.btnModeBalanced -> viewModel.setFridayExitMode(WorkTimeConfig.FridayExitMode.BALANCED)
+                }
+                updateUI()
+            }
         }
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_main -> true
+                R.id.nav_home -> true
                 R.id.nav_history -> {
-                    startActivity(android.content.Intent(this, HistoryActivity::class.java))
-                    true
+                    startActivity(Intent(this, HistoryActivity::class.java))
+                    false
                 }
                 R.id.nav_settings -> {
-                    startActivity(android.content.Intent(this, SettingsActivity::class.java))
-                    true
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    false
                 }
                 else -> false
             }
         }
     }
 
-    private fun setupObservers() {
+    private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.currentDate.collect { date ->
-                        tvDate.text = date.formatShortDate()
-                    }
-                }
-                launch {
-                    viewModel.startTime.collect { time ->
-                        etStartTime.setText(time?.formatTime() ?: "")
-                        updateCalculations()
-                    }
-                }
-                launch {
-                    viewModel.endTime.collect { time ->
-                        etEndTime.setText(time?.formatTime() ?: "")
-                        updateCalculations()
-                    }
-                }
-                launch {
-                    viewModel.breakMinutes.collect { minutes ->
-                        tvBreakValue.text = minutes.minutesToDisplayString()
-                    }
-                }
-                launch {
-                    viewModel.notes.collect { notes ->
-                        if (etNotes.text.toString() != notes) {
-                            etNotes.setText(notes)
+                    viewModel.isOnboardingCompleted.collect { completed ->
+                        if (!completed && !onboardingDialogShown) {
+                            showOnboardingWizard()
                         }
                     }
                 }
-                launch {
-                    viewModel.currentWeek.collect { week ->
-                        week?.let { updateWeekDistribution(it) }
-                    }
-                }
-                launch {
-                    viewModel.stats.collect { stats ->
-                        stats?.let { updateStats(it) }
-                    }
-                }
+
                 launch {
                     viewModel.workTimeConfig.collect { config ->
-                        config?.let { updateLeaveSuggestion(it) }
+                        config?.let {
+                            if (it.fridayTargetMode == WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT) {
+                                toggleFridayMode.check(R.id.btnModeEarlyFriday)
+                            } else {
+                                toggleFridayMode.check(R.id.btnModeBalanced)
+                            }
+                            updateUI()
+                        }
                     }
                 }
+
                 launch {
-                    viewModel.currentWeek.collect {
-                        updateLeaveSuggestion(viewModel.workTimeConfig.value)
+                    viewModel.currentDate.collect { date ->
+                        tvDate.text = date.formatDate()
+                        updateUI()
                     }
+                }
+
+                launch {
+                    viewModel.currentWeek.collect { updateUI() }
                 }
             }
         }
     }
 
-    private fun updateCalculations() {
-        tvDurationValue.text = viewModel.getCurrentDurationString()
-        updateLeaveSuggestion(viewModel.workTimeConfig.value)
-    }
-
-    private fun updateStats(stats: WeekStats) {
-        tvTodayWorkedValue.text = stats.todayHours.formatHours()
-
+    private fun updateUI() {
+        val start = viewModel.startTime.value
+        val end = viewModel.endTime.value
+        val breakMins = viewModel.breakMinutes.value
         val config = viewModel.workTimeConfig.value ?: return
-        tvWeekWorkedValue.text = "${stats.totalHours.formatHours()} / ${config.weeklyTargetHours.formatHours()}"
-        tvRemainingValue.text = stats.remainingHours.formatHours()
-        progressBar.progress = stats.progressPercentage.toInt()
-        tvProgressText.text = "${stats.progressPercentage.toInt()}%"
 
-        tvSuggestedDaily.text = "Suggested daily: ${viewModel.getSuggestedDailyHours().formatHours()}"
-    }
+        btnStartTime.text = start?.formatTime() ?: "--:--"
+        btnEndTime.text = end?.formatTime() ?: "--:--"
+        btnBreakMins.text = "${breakMins}m"
 
-    private fun updateWeekDistribution(week: WorkWeek) {
-        val days = week.getSortedWorkDays()
+        // Gross, Net, and Break metrics
+        if (start != null && end != null) {
+            val grossDuration = java.time.Duration.between(start, end)
+            if (!grossDuration.isNegative) {
+                val grossMins = grossDuration.toMinutes().toInt()
+                val netMins = (grossMins - breakMins).coerceAtLeast(0)
 
-        tvMonHours.text = days.firstOrNull { it.date.dayOfWeek.value == 1 }?.effectiveHours?.formatHours() ?: "00:00"
-        tvTueHours.text = days.firstOrNull { it.date.dayOfWeek.value == 2 }?.effectiveHours?.formatHours() ?: "00:00"
-        tvWedHours.text = days.firstOrNull { it.date.dayOfWeek.value == 3 }?.effectiveHours?.formatHours() ?: "00:00"
-        tvThuHours.text = days.firstOrNull { it.date.dayOfWeek.value == 4 }?.effectiveHours?.formatHours() ?: "00:00"
-        tvFriHours.text = days.firstOrNull { it.date.dayOfWeek.value == 5 }?.effectiveHours?.formatHours() ?: "00:00"
-    }
+                tvTodayWorkedValue.text = String.format("%02dh %02dm", grossMins / 60, grossMins % 60)
+                tvDurationValue.text = String.format("%02dh %02dm", netMins / 60, netMins % 60)
+                tvBreakValue.text = "${breakMins}m"
 
-    private fun updateLeaveSuggestion(config: WorkTimeConfig?) {
-        config ?: return
-
-        val leaveTime = viewModel.getSuggestedLeaveTime()
-        if (leaveTime != null) {
-            tvLeaveSuggestion.text = "Can leave at: ${leaveTime.formatTime()}"
+                // Check Kernzeit compliance if enabled
+                if (config.enableKernzeiten) {
+                    val tempDay = WorkDay(date = viewModel.currentDate.value, startTime = start, endTime = end, breakMinutes = breakMins)
+                    val core = config.coreTimes[tempDay.dayOfWeek]
+                    if (core?.start != null && core.end != null) {
+                        tvKernzeitBadge.visibility = View.VISIBLE
+                        if (tempDay.isInKernzeit(config)) {
+                            tvKernzeitBadge.text = "Kernzeit Met ✓ (${core.start.formatTime()} - ${core.end.formatTime()})"
+                            tvKernzeitBadge.setBackgroundColor(getColor(R.color.success_bg))
+                            tvKernzeitBadge.setTextColor(getColor(R.color.success_green))
+                        } else {
+                            tvKernzeitBadge.text = "Kernzeit Warning: Mandatory presence (${core.start.formatTime()} - ${core.end.formatTime()})"
+                            tvKernzeitBadge.setBackgroundColor(getColor(R.color.warning_bg))
+                            tvKernzeitBadge.setTextColor(getColor(R.color.warning_amber))
+                        }
+                    } else {
+                        tvKernzeitBadge.visibility = View.GONE
+                    }
+                } else {
+                    tvKernzeitBadge.visibility = View.GONE
+                }
+            } else {
+                resetDayInputs()
+            }
         } else {
-            tvLeaveSuggestion.text = "Weekly target met!"
+            resetDayInputs()
+        }
+
+        // Update Smart Schedule Planner & Projections
+        val projection = viewModel.getScheduleProjection()
+        projection?.let { proj ->
+            tvPlannerSummary.text = proj.summaryText
+
+            val targetMins = Math.round(proj.todayTargetHours * 60)
+            tvTargetHoursBadge.text = String.format("Target: %dh %02dm", targetMins / 60, targetMins % 60)
+
+            val suggestedLeave = viewModel.getSuggestedLeaveTime()
+            tvLeaveSuggestion.text = if (suggestedLeave != null) {
+                "Suggested Leave: ${suggestedLeave.formatTime()}"
+            } else {
+                "Suggested Leave: --:--"
+            }
+        }
+
+        // Update Week Progress & Days breakdown
+        val stats = viewModel.getCurrentWeekStatsPreview()
+        val totalMins = Math.round(stats.totalHours * 60)
+        val targetMins = Math.round(config.weeklyTargetHours * 60)
+        tvWeekWorkedValue.text = String.format("%02dh %02dm / %02dh %02dm", totalMins / 60, totalMins % 60, targetMins / 60, targetMins % 60)
+
+        val remMins = Math.round(stats.remainingHours.coerceAtLeast(0f) * 60)
+        tvRemainingValue.text = String.format("Remaining: %02dh %02dm", remMins / 60, remMins % 60)
+
+        progressBar.progress = stats.progressPercentage.toInt()
+        tvProgressText.text = "${stats.progressPercentage.toInt()}% of weekly goal"
+
+        // Day breakdown
+        val weekDist = viewModel.getWeekDistribution()
+        val dayViews = listOf(tvMonHours, tvTueHours, tvWedHours, tvThuHours, tvFriHours)
+        for (i in dayViews.indices) {
+            val dist = weekDist.getOrNull(i)
+            if (dist != null && dist.hours > 0f) {
+                val dm = Math.round(dist.hours * 60)
+                dayViews[i].text = String.format("%02dh %02dm", dm / 60, dm % 60)
+            } else {
+                dayViews[i].text = "--:--"
+            }
         }
     }
 
-    private fun showToast(message: String) {
-        android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+    private fun resetDayInputs() {
+        tvTodayWorkedValue.text = "00h 00m"
+        tvDurationValue.text = "00h 00m"
+        tvBreakValue.text = "0m"
+        tvKernzeitBadge.visibility = View.GONE
     }
-}
 
-class MainViewModelFactory(
-    private val workDayRepository: WorkDayRepository,
-    private val preferencesRepository: UserPreferencesRepository
-) : androidx.lifecycle.ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return MainViewModel(workDayRepository, preferencesRepository) as T
+    private fun showOnboardingWizard() {
+        onboardingDialogShown = true
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_onboarding, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        val etTarget = dialogView.findViewById<TextInputEditText>(R.id.etOnboardingTargetHours)
+        val switchKernzeiten = dialogView.findViewById<MaterialSwitch>(R.id.switchOnboardingKernzeiten)
+        val btnGetStarted = dialogView.findViewById<Button>(R.id.btnOnboardingGetStarted)
+        val toggleFriday = dialogView.findViewById<MaterialButtonToggleGroup>(R.id.toggleGroupOnboardingFriday)
+
+        toggleFriday.check(R.id.btnOnboardingEarlyFriday)
+
+        btnGetStarted.setOnClickListener {
+            val target = etTarget.text?.toString()?.toFloatOrNull() ?: 38.5f
+            val kernzeiten = switchKernzeiten.isChecked
+            val fridayMode = if (toggleFriday.checkedButtonId == R.id.btnOnboardingEarlyFriday) {
+                WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT
+            } else {
+                WorkTimeConfig.FridayExitMode.BALANCED
+            }
+
+            val currentConfig = viewModel.workTimeConfig.value ?: WorkTimeConfig()
+            val newConfig = currentConfig.copy(
+                weeklyTargetHours = target,
+                enableKernzeiten = kernzeiten,
+                fridayTargetMode = fridayMode
+            )
+            (application as NitApplication).preferencesRepository.run {
+                kotlinx.coroutines.GlobalScope.launch {
+                    setWorkTimeConfig(newConfig)
+                    setOnboardingCompleted(true)
+                }
+            }
+            viewModel.completeOnboarding()
+            dialog.dismiss()
+            updateUI()
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+
+        dialog.show()
     }
 }
