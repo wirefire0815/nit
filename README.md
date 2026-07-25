@@ -1,10 +1,6 @@
 # nit
 
-Because your brain is bad at math and your phone's calculator won't remember yesterday's hours.
-
 **nit** is a simple work hour calculator for flexible schedules. Input your start and end times, get your net hours (with automatic breaks), and see how today affects your weekly total. It calculates daily targets so you know when you can leave without working overtime or undercutting your core presence hours.
-
-nit: nit isn't a timer
 
 ## Features
 
@@ -29,8 +25,7 @@ It's a spreadsheet that doesn't require Excel skills. Set your target hours in S
 
 ## Vibecoded
 
-This project was originally built by [Mistral Vibe](https://vibe.mistral.ai) and later overhauled using **Antigravity** (powered by Gemini) — because even AI agents need pair programming to fix their own bad UX. The architecture is clean, the commits are atomic, and no, it won't start a timer on you.
-
+This project was entirely built by **Mistral Vibe** and **Gemini**. Both suck.
 ## Tech Stack
 
 - **Kotlin** - Because Java is for people who enjoy pain
@@ -42,8 +37,4 @@ This project was originally built by [Mistral Vibe](https://vibe.mistral.ai) and
 
 ## Installation
 
-Clone, open in Android Studio, build, run. You know the drill.
-
-## License
-
-Do whatever you want with it. It's your calculator.
+Clone, build, run. Ez.
