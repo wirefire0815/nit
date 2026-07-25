@@ -1,6 +1,7 @@
 package dev.whitefire.nit.ui.main
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.whitefire.nit.data.repository.UserPreferencesRepository
 import dev.whitefire.nit.data.repository.WorkDayRepository
@@ -483,4 +484,17 @@ class MainViewModel(
         val hours: Float,
         val isPast: Boolean
     )
+}
+
+class MainViewModelFactory(
+    private val workDayRepository: WorkDayRepository,
+    private val preferencesRepository: UserPreferencesRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return MainViewModel(workDayRepository, preferencesRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }

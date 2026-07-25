@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> true
+                R.id.nav_main -> true
                 R.id.nav_history -> {
                     startActivity(Intent(this, HistoryActivity::class.java))
                     false
