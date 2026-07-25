@@ -194,11 +194,14 @@ class HomeFragment : Fragment() {
 
         toggleFridayMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
-                when (checkedId) {
-                    R.id.btnModeBalanced -> viewModel.setFridayExitMode(WorkTimeConfig.SchedulePlannerMode.BALANCED)
-                    R.id.btnModeEarlyFriday -> viewModel.setFridayExitMode(WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS)
+                val selectedMode = when (checkedId) {
+                    R.id.btnModeBalanced -> WorkTimeConfig.SchedulePlannerMode.BALANCED
+                    R.id.btnModeEarlyFriday -> WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS
+                    else -> null
                 }
-                updateUI()
+                if (selectedMode != null && viewModel.workTimeConfig.value?.plannerMode != selectedMode) {
+                    viewModel.setFridayExitMode(selectedMode)
+                }
             }
         }
     }
@@ -232,10 +235,13 @@ class HomeFragment : Fragment() {
         btnEndTime.text = end?.formatTime() ?: "--:--"
         btnBreakMins.text = "${breakMins}m"
 
-        when (config.plannerMode) {
-            WorkTimeConfig.SchedulePlannerMode.BALANCED -> toggleFridayMode.check(R.id.btnModeBalanced)
-            WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS -> toggleFridayMode.check(R.id.btnModeEarlyFriday)
-            WorkTimeConfig.SchedulePlannerMode.CUSTOM -> {}
+        val targetCheckId = when (config.plannerMode) {
+            WorkTimeConfig.SchedulePlannerMode.BALANCED -> R.id.btnModeBalanced
+            WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS -> R.id.btnModeEarlyFriday
+            WorkTimeConfig.SchedulePlannerMode.CUSTOM -> View.NO_ID
+        }
+        if (targetCheckId != View.NO_ID && toggleFridayMode.checkedButtonId != targetCheckId) {
+            toggleFridayMode.check(targetCheckId)
         }
 
         if (start != null && end != null) {
