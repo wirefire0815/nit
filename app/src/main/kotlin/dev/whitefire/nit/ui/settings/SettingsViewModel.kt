@@ -45,11 +45,20 @@ class SettingsViewModel(
         }
     }
 
+    fun saveConfig() {
+        _config.value?.let { current ->
+            saveConfig(current)
+        }
+    }
+
     fun setWeeklyTarget(target: Float) {
         _config.value?.let { current ->
             _config.value = current.copy(weeklyTargetHours = target)
         }
     }
+
+    fun setWeeklyTargetHours(target: Float) = setWeeklyTarget(target)
+    fun setBreakRules(afterHours: Float, durationHours: Float) = setBreakRule(afterHours, durationHours)
 
     fun setCoreTime(dayOfWeek: java.time.DayOfWeek, start: LocalTime, end: LocalTime) {
         _config.value?.let { current ->

@@ -278,6 +278,7 @@ class MainViewModel(
             )
             
             workDayRepository.saveWorkDay(workDay)
+            _currentWeek.value = _currentWeek.value?.withWorkDay(workDay)
             refreshWeekStats()
         }
     }
@@ -289,6 +290,7 @@ class MainViewModel(
         viewModelScope.launch {
             val date = _currentDate.value
             workDayRepository.deleteWorkDay(date)
+            _currentWeek.value = _currentWeek.value?.withoutWorkDay(date)
             
             // Reset current day inputs
             _startTime.value = null
