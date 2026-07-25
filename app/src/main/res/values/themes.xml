@@ -1,17 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Nit" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.Nit" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary_slate</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
         <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
-        <item name="colorSecondary">@color/text_secondary</item>
+        <item name="colorSecondary">@color/primary_slate</item>
         <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/on_primary_container</item>
         <item name="android:colorBackground">@color/bg_light_grey</item>
         <item name="colorSurface">@color/surface_card</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorOnSurfaceVariant">@color/text_muted</item>
         <item name="colorOutline">@color/surface_border</item>
+        <item name="materialTimePickerTheme">@style/Theme.Nit.TimePicker</item>
+        <item name="alertDialogTheme">@style/Theme.Nit.Dialog</item>
+    </style>
+
+    <style name="Theme.Nit.TimePicker" parent="ThemeOverlay.Material3.MaterialTimePicker">
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorPrimary">@color/primary_slate</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="android:colorBackground">@color/surface_card</item>
+    </style>
+
+    <style name="Theme.Nit.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorPrimary">@color/primary_slate</item>
+        <item name="colorOnPrimary">@color/white</item>
     </style>
 </resources>

@@ -84,7 +84,7 @@
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:paddingHorizontal="10dp"
+                        android:paddingHorizontal="12dp"
                         android:text="Today"
                         android:textSize="12sp"
                         app:cornerRadius="10dp" />
@@ -141,207 +141,219 @@
                         tools:text="Remaining: 22h 45m" />
                 </LinearLayout>
 
-                <!-- Interactive 5-Day Cards Breakdown Grid -->
-                <LinearLayout
+                <!-- Spacious 5-Day Mon-Fri Week Cards Row -->
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                    android:clipToPadding="false"
+                    android:scrollbars="none">
 
-                    <!-- Mon Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardMon"
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/surface_border"
-                        app:strokeWidth="1dp"
-                        app:cardBackgroundColor="@color/bg_light_grey">
+                        android:orientation="horizontal">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <!-- Mon Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardMon"
+                            android:layout_width="72dp"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp">
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="@color/surface_border"
+                            app:strokeWidth="1dp"
+                            app:cardBackgroundColor="@color/bg_light_grey">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Mon"
-                                android:textColor="@color/text_muted"
-                                android:textSize="11sp" />
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:paddingVertical="10dp"
+                                android:paddingHorizontal="4dp">
 
-                            <TextView
-                                android:id="@+id/tvMonHours"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                tools:text="08h 03m" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="MON"
+                                    android:textColor="@color/text_muted"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
 
-                    <!-- Tue Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardTue"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/surface_border"
-                        app:strokeWidth="1dp"
-                        app:cardBackgroundColor="@color/bg_light_grey">
+                                <TextView
+                                    android:id="@+id/tvMonHours"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    tools:text="08h 03m" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <!-- Tue Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardTue"
+                            android:layout_width="72dp"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp">
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="@color/surface_border"
+                            app:strokeWidth="1dp"
+                            app:cardBackgroundColor="@color/bg_light_grey">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Tue"
-                                android:textColor="@color/text_muted"
-                                android:textSize="11sp" />
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:paddingVertical="10dp"
+                                android:paddingHorizontal="4dp">
 
-                            <TextView
-                                android:id="@+id/tvTueHours"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                tools:text="07h 42m" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="TUE"
+                                    android:textColor="@color/text_muted"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
 
-                    <!-- Wed Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardWed"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/surface_border"
-                        app:strokeWidth="1dp"
-                        app:cardBackgroundColor="@color/bg_light_grey">
+                                <TextView
+                                    android:id="@+id/tvTueHours"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    tools:text="07h 42m" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <!-- Wed Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardWed"
+                            android:layout_width="72dp"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp">
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="@color/surface_border"
+                            app:strokeWidth="1dp"
+                            app:cardBackgroundColor="@color/bg_light_grey">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Wed"
-                                android:textColor="@color/text_muted"
-                                android:textSize="11sp" />
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:paddingVertical="10dp"
+                                android:paddingHorizontal="4dp">
 
-                            <TextView
-                                android:id="@+id/tvWedHours"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/primary_slate"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                tools:text="--:--" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="WED"
+                                    android:textColor="@color/text_muted"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
 
-                    <!-- Thu Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardThu"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/surface_border"
-                        app:strokeWidth="1dp"
-                        app:cardBackgroundColor="@color/bg_light_grey">
+                                <TextView
+                                    android:id="@+id/tvWedHours"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="@color/primary_slate"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    tools:text="--:--" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <!-- Thu Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardThu"
+                            android:layout_width="72dp"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp">
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="@color/surface_border"
+                            app:strokeWidth="1dp"
+                            app:cardBackgroundColor="@color/bg_light_grey">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Thu"
-                                android:textColor="@color/text_muted"
-                                android:textSize="11sp" />
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:paddingVertical="10dp"
+                                android:paddingHorizontal="4dp">
 
-                            <TextView
-                                android:id="@+id/tvThuHours"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                tools:text="--:--" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="THU"
+                                    android:textColor="@color/text_muted"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
 
-                    <!-- Fri Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardFri"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/surface_border"
-                        app:strokeWidth="1dp"
-                        app:cardBackgroundColor="@color/bg_light_grey">
+                                <TextView
+                                    android:id="@+id/tvThuHours"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    tools:text="--:--" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <!-- Fri Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardFri"
+                            android:layout_width="72dp"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp">
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="@color/surface_border"
+                            app:strokeWidth="1dp"
+                            app:cardBackgroundColor="@color/bg_light_grey">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Fri"
-                                android:textColor="@color/text_muted"
-                                android:textSize="11sp" />
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:paddingVertical="10dp"
+                                android:paddingHorizontal="4dp">
 
-                            <TextView
-                                android:id="@+id/tvFriHours"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                tools:text="--:--" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="FRI"
+                                    android:textColor="@color/text_muted"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvFriHours"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    tools:text="--:--" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
+                </HorizontalScrollView>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

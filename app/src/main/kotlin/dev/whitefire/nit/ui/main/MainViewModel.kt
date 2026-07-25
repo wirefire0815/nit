@@ -428,6 +428,15 @@ class MainViewModel(
             }
         }
 
+        // Respect compulsory core hours: leave time cannot be earlier than compulsory core end time
+        if (config.enableCoreHours) {
+            val dayOfWeek = _currentDate.value.dayOfWeek
+            val coreTime = config.coreTimes[dayOfWeek]
+            if (coreTime?.end != null && leaveTime.isBefore(coreTime.end)) {
+                leaveTime = coreTime.end
+            }
+        }
+
         return leaveTime
     }
     
