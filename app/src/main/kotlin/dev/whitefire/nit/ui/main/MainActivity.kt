@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvPlannerSummary: TextView
     private lateinit var tvLeaveSuggestion: TextView
     private lateinit var tvTargetHoursBadge: TextView
-    private lateinit var tvKernzeitBadge: TextView
+    private lateinit var tvCoreHoursBadge: TextView
     private lateinit var toggleFridayMode: MaterialButtonToggleGroup
     private lateinit var btnModeEarlyFriday: Button
     private lateinit var btnModeBalanced: Button
@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         tvPlannerSummary = findViewById(R.id.tvPlannerSummary)
         tvLeaveSuggestion = findViewById(R.id.tvLeaveSuggestion)
         tvTargetHoursBadge = findViewById(R.id.tvTargetHoursBadge)
-        tvKernzeitBadge = findViewById(R.id.tvKernzeitBadge)
+        tvCoreHoursBadge = findViewById(R.id.tvCoreHoursBadge)
         toggleFridayMode = findViewById(R.id.toggleFridayMode)
         btnModeEarlyFriday = findViewById(R.id.btnModeEarlyFriday)
         btnModeBalanced = findViewById(R.id.btnModeBalanced)
@@ -257,26 +257,26 @@ class MainActivity : AppCompatActivity() {
                 tvDurationValue.text = String.format("%02dh %02dm", netMins / 60, netMins % 60)
                 tvBreakValue.text = "${breakMins}m"
 
-                // Check Kernzeit compliance if enabled
-                if (config.enableKernzeiten) {
+                // Check Core Hours compliance if enabled
+                if (config.enableCoreHours) {
                     val tempDay = WorkDay(date = viewModel.currentDate.value, startTime = start, endTime = end, breakMinutes = breakMins)
                     val core = config.coreTimes[tempDay.dayOfWeek]
                     if (core?.start != null && core.end != null) {
-                        tvKernzeitBadge.visibility = View.VISIBLE
-                        if (tempDay.isInKernzeit(config)) {
-                            tvKernzeitBadge.text = "Kernzeit Met ✓ (${core.start.formatTime()} - ${core.end.formatTime()})"
-                            tvKernzeitBadge.setBackgroundColor(getColor(R.color.success_bg))
-                            tvKernzeitBadge.setTextColor(getColor(R.color.success_green))
+                        tvCoreHoursBadge.visibility = View.VISIBLE
+                        if (tempDay.satisfiesCoreHours(config)) {
+                            tvCoreHoursBadge.text = "Core Hours Met ✓ (${core.start.formatTime()} - ${core.end.formatTime()})"
+                            tvCoreHoursBadge.setBackgroundColor(getColor(R.color.success_bg))
+                            tvCoreHoursBadge.setTextColor(getColor(R.color.success_green))
                         } else {
-                            tvKernzeitBadge.text = "Kernzeit Warning: Mandatory presence (${core.start.formatTime()} - ${core.end.formatTime()})"
-                            tvKernzeitBadge.setBackgroundColor(getColor(R.color.warning_bg))
-                            tvKernzeitBadge.setTextColor(getColor(R.color.warning_amber))
+                            tvCoreHoursBadge.text = "Core Hours Warning: Mandatory presence (${core.start.formatTime()} - ${core.end.formatTime()})"
+                            tvCoreHoursBadge.setBackgroundColor(getColor(R.color.warning_bg))
+                            tvCoreHoursBadge.setTextColor(getColor(R.color.warning_amber))
                         }
                     } else {
-                        tvKernzeitBadge.visibility = View.GONE
+                        tvCoreHoursBadge.visibility = View.GONE
                     }
                 } else {
-                    tvKernzeitBadge.visibility = View.GONE
+                    tvCoreHoursBadge.visibility = View.GONE
                 }
             } else {
                 resetDayInputs()
@@ -331,7 +331,7 @@ class MainActivity : AppCompatActivity() {
         tvTodayWorkedValue.text = "00h 00m"
         tvDurationValue.text = "00h 00m"
         tvBreakValue.text = "0m"
-        tvKernzeitBadge.visibility = View.GONE
+        tvCoreHoursBadge.visibility = View.GONE
     }
 
     private fun showOnboardingWizard() {
@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         val etTarget = dialogView.findViewById<TextInputEditText>(R.id.etOnboardingTargetHours)
-        val switchKernzeiten = dialogView.findViewById<MaterialSwitch>(R.id.switchOnboardingKernzeiten)
+        val switchCoreHours = dialogView.findViewById<MaterialSwitch>(R.id.switchOnboardingCoreHours)
         val btnGetStarted = dialogView.findViewById<Button>(R.id.btnOnboardingGetStarted)
         val toggleFriday = dialogView.findViewById<MaterialButtonToggleGroup>(R.id.toggleGroupOnboardingFriday)
 
@@ -351,18 +351,18 @@ class MainActivity : AppCompatActivity() {
 
         btnGetStarted.setOnClickListener {
             val target = etTarget.text?.toString()?.toFloatOrNull() ?: 38.5f
-            val kernzeiten = switchKernzeiten.isChecked
-            val fridayMode = if (toggleFriday.checkedButtonId == R.id.btnOnboardingEarlyFriday) {
-                WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT
+            val coreHoursEnabled = switchCoreHours.isChecked
+            val plannerMode = if (toggleFriday.checkedButtonId == R.id.btnOnboardingEarlyFriday) {
+                WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS
             } else {
-                WorkTimeConfig.FridayExitMode.BALANCED
+                WorkTimeConfig.SchedulePlannerMode.BALANCED
             }
 
             val currentConfig = viewModel.workTimeConfig.value ?: WorkTimeConfig()
             val newConfig = currentConfig.copy(
                 weeklyTargetHours = target,
-                enableKernzeiten = kernzeiten,
-                fridayTargetMode = fridayMode
+                enableCoreHours = coreHoursEnabled,
+                plannerMode = plannerMode
             )
             (application as NitApplication).preferencesRepository.run {
                 kotlinx.coroutines.GlobalScope.launch {

@@ -383,12 +383,15 @@ class MainViewModel(
         }
     }
 
-    fun setEnableKernzeiten(enabled: Boolean) {
+    fun setEnableCoreHours(enabled: Boolean) {
         val currentConfig = _workTimeConfig.value ?: return
         viewModelScope.launch {
-            preferencesRepository.setWorkTimeConfig(currentConfig.copy(enableKernzeiten = enabled))
+            preferencesRepository.setWorkTimeConfig(currentConfig.copy(enableCoreHours = enabled))
         }
     }
+
+    @Deprecated("Use setEnableCoreHours", ReplaceWith("setEnableCoreHours(enabled)"))
+    fun setEnableKernzeiten(enabled: Boolean) = setEnableCoreHours(enabled)
 
     /**
      * Get current weekly schedule projection

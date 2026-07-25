@@ -164,7 +164,7 @@
                         android:padding="12dp"
                         android:textColor="@color/on_primary_container"
                         android:textSize="13sp"
-                        tools:text="Work 9h 53m today &amp; Thursday to leave at 12:30 on Friday." />
+                        tools:text="Work 9h 53m today &amp; Thursday to leave early on Friday." />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -316,9 +316,9 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Kernzeit Compliance Banner -->
+                    <!-- Core Hours Compliance Banner -->
                     <TextView
-                        android:id="@+id/tvKernzeitBadge"
+                        android:id="@+id/tvCoreHoursBadge"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
@@ -327,7 +327,7 @@
                         android:textColor="@color/success_green"
                         android:textSize="12sp"
                         android:visibility="gone"
-                        tools:text="Kernzeit Met ✓ (09:30 - 16:00)"
+                        tools:text="Core Hours Met ✓ (09:30 - 16:00)"
                         tools:visibility="visible" />
 
                     <!-- Day Results Metrics -->

@@ -30,8 +30,8 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var etWeeklyTarget: EditText
     private lateinit var etBreakAfter: EditText
     private lateinit var etBreakDuration: EditText
-    private lateinit var switchEnableKernzeiten: MaterialSwitch
-    private lateinit var layoutKernzeitDetails: LinearLayout
+    private lateinit var switchEnableCoreHours: MaterialSwitch
+    private lateinit var layoutCoreHoursDetails: LinearLayout
     private lateinit var btnMonStart: Button
     private lateinit var btnMonEnd: Button
     private lateinit var btnFriStart: Button
@@ -51,8 +51,8 @@ class SettingsActivity : AppCompatActivity() {
         etWeeklyTarget = findViewById(R.id.etWeeklyTarget)
         etBreakAfter = findViewById(R.id.etBreakAfter)
         etBreakDuration = findViewById(R.id.etBreakDuration)
-        switchEnableKernzeiten = findViewById(R.id.switchEnableKernzeiten)
-        layoutKernzeitDetails = findViewById(R.id.layoutKernzeitDetails)
+        switchEnableCoreHours = findViewById(R.id.switchEnableCoreHours)
+        layoutCoreHoursDetails = findViewById(R.id.layoutCoreHoursDetails)
         btnMonStart = findViewById(R.id.btnMonStart)
         btnMonEnd = findViewById(R.id.btnMonEnd)
         btnFriStart = findViewById(R.id.btnFriStart)
@@ -68,9 +68,9 @@ class SettingsActivity : AppCompatActivity() {
         btnSave.setOnClickListener { saveSettings() }
         btnReset.setOnClickListener { resetToDefaults() }
 
-        switchEnableKernzeiten.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.setEnableKernzeiten(isChecked)
-            layoutKernzeitDetails.visibility = if (isChecked) View.VISIBLE else View.GONE
+        switchEnableCoreHours.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setEnableCoreHours(isChecked)
+            layoutCoreHoursDetails.visibility = if (isChecked) View.VISIBLE else View.GONE
         }
 
         btnMonStart.setOnClickListener {
@@ -120,8 +120,8 @@ class SettingsActivity : AppCompatActivity() {
         etBreakAfter.setText(config.breakRules.firstOrNull()?.afterHours?.toString() ?: "6")
         etBreakDuration.setText(config.breakRules.firstOrNull()?.durationHours?.toString() ?: "0.5")
 
-        switchEnableKernzeiten.isChecked = config.enableKernzeiten
-        layoutKernzeitDetails.visibility = if (config.enableKernzeiten) View.VISIBLE else View.GONE
+        switchEnableCoreHours.isChecked = config.enableCoreHours
+        layoutCoreHoursDetails.visibility = if (config.enableCoreHours) View.VISIBLE else View.GONE
 
         btnMonStart.text = config.coreTimes[DayOfWeek.MONDAY]?.start?.formatTime() ?: "09:30"
         btnMonEnd.text = config.coreTimes[DayOfWeek.MONDAY]?.end?.formatTime() ?: "16:00"

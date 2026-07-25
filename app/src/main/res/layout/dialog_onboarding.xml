@@ -70,7 +70,7 @@
                 android:text="38.5" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Kernzeiten Toggle -->
+        <!-- Core Hours Toggle -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Compulsory Core Hours (Kernzeiten)"
+                    android:text="Compulsory Core Hours"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -101,7 +101,7 @@
             </LinearLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchOnboardingKernzeiten"
+                android:id="@+id/switchOnboardingCoreHours"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true" />

@@ -82,24 +82,24 @@ class WorkCalculationTest {
     }
 
     @Test
-    fun testKernzeitCheck_CorrectValidation() {
-        val config = WorkTimeConfig(enableKernzeiten = true)
+    fun testCoreHoursCheck_CorrectValidation() {
+        val config = WorkTimeConfig(enableCoreHours = true)
 
         val validDay = WorkDay(
             date = LocalDate.of(2026, 7, 20),
             startTime = LocalTime.of(9, 15),
             endTime = LocalTime.of(16, 30)
         )
-        assertTrue(validDay.isInKernzeit(config))
+        assertTrue(validDay.satisfiesCoreHours(config))
 
         val lateDay = WorkDay(
             date = LocalDate.of(2026, 7, 20),
             startTime = LocalTime.of(9, 45),
             endTime = LocalTime.of(16, 30)
         )
-        assertFalse(lateDay.isInKernzeit(config))
+        assertFalse(lateDay.satisfiesCoreHours(config))
 
-        val disabledConfig = config.copy(enableKernzeiten = false)
-        assertTrue(lateDay.isInKernzeit(disabledConfig))
+        val disabledConfig = config.copy(enableCoreHours = false)
+        assertTrue(lateDay.satisfiesCoreHours(disabledConfig))
     }
 }

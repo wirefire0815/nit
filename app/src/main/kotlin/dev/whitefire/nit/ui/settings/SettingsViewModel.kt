@@ -67,15 +67,18 @@ class SettingsViewModel(
         }
     }
 
-    fun setEnableKernzeiten(enabled: Boolean) {
+    fun setEnableCoreHours(enabled: Boolean) {
         _config.value?.let { current ->
-            _config.value = current.copy(enableKernzeiten = enabled)
+            _config.value = current.copy(enableCoreHours = enabled)
         }
     }
 
-    fun setFridayExitMode(mode: WorkTimeConfig.FridayExitMode) {
+    @Deprecated("Use setEnableCoreHours", ReplaceWith("setEnableCoreHours(enabled)"))
+    fun setEnableKernzeiten(enabled: Boolean) = setEnableCoreHours(enabled)
+
+    fun setPlannerMode(mode: WorkTimeConfig.SchedulePlannerMode) {
         _config.value?.let { current ->
-            _config.value = current.copy(fridayTargetMode = mode)
+            _config.value = current.copy(plannerMode = mode)
         }
     }
 

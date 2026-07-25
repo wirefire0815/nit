@@ -57,10 +57,10 @@ data class WorkDay(
         get() = startTime != null && endTime != null
     
     /**
-     * Check if work day satisfies Kernzeit rules
+     * Check if work day satisfies compulsory core hours
      */
-    fun isInKernzeit(config: WorkTimeConfig = DEFAULT_WORK_CONFIG): Boolean {
-        if (!config.enableKernzeiten) return true
+    fun satisfiesCoreHours(config: WorkTimeConfig = DEFAULT_WORK_CONFIG): Boolean {
+        if (!config.enableCoreHours) return true
         
         val coreTime = config.coreTimes[dayOfWeek] ?: return true
         if (coreTime.start == null || coreTime.end == null) return true
@@ -68,10 +68,12 @@ data class WorkDay(
         val actualStart = startTime ?: return false
         val actualEnd = endTime ?: return false
         
-        // Start must be at or before core start, and end must be at or after core end
         return !actualStart.isAfter(coreTime.start) && 
                !actualEnd.isBefore(coreTime.end)
     }
+
+    @Deprecated("Use satisfiesCoreHours instead", ReplaceWith("satisfiesCoreHours(config)"))
+    fun isInKernzeit(config: WorkTimeConfig = DEFAULT_WORK_CONFIG): Boolean = satisfiesCoreHours(config)
     
     /**
      * Calculate required break minutes based on gross duration and break rules

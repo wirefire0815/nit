@@ -51,10 +51,10 @@ class UserPreferencesRepository private constructor(
         private val SHOW_BREAK_WARNING = booleanPreferencesKey("show_break_warning")
         private val DARK_MODE = booleanPreferencesKey("dark_mode")
         private val AUTO_CALCULATE_BREAK = booleanPreferencesKey("auto_calculate_break")
-        private val ENABLE_KERNZEITEN = booleanPreferencesKey("enable_kernzeiten")
+        private val ENABLE_CORE_HOURS = booleanPreferencesKey("enable_core_hours")
         private val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
-        private val FRIDAY_TARGET_MODE = stringPreferencesKey("friday_target_mode")
-        private val CUSTOM_FRIDAY_TARGET_HOURS = floatPreferencesKey("custom_friday_target_hours")
+        private val PLANNER_MODE = stringPreferencesKey("planner_mode")
+        private val CUSTOM_TARGET_HOURS = floatPreferencesKey("custom_target_hours")
         
         @Volatile
         private var instance: UserPreferencesRepository? = null
@@ -70,18 +70,20 @@ class UserPreferencesRepository private constructor(
     
     val workTimeConfigFlow: Flow<WorkTimeConfig> = dataStore.data
         .map { preferences ->
-            val modeStr = preferences[FRIDAY_TARGET_MODE] ?: WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT.name
-            val fridayMode = try {
-                WorkTimeConfig.FridayExitMode.valueOf(modeStr)
+            val modeStr = preferences[PLANNER_MODE] ?: preferences[stringPreferencesKey("friday_target_mode")] ?: WorkTimeConfig.SchedulePlannerMode.BALANCED.name
+            val plannerMode = try {
+                WorkTimeConfig.SchedulePlannerMode.valueOf(modeStr)
             } catch (e: Exception) {
-                WorkTimeConfig.FridayExitMode.EARLY_KERNZEIT
+                WorkTimeConfig.SchedulePlannerMode.BALANCED
             }
+
+            val enableCore = preferences[ENABLE_CORE_HOURS] ?: preferences[booleanPreferencesKey("enable_kernzeiten")] ?: true
 
             WorkTimeConfig(
                 weeklyTargetHours = preferences[WEEKLY_TARGET_HOURS] ?: 38.5f,
-                enableKernzeiten = preferences[ENABLE_KERNZEITEN] ?: true,
-                fridayTargetMode = fridayMode,
-                customFridayTargetHours = preferences[CUSTOM_FRIDAY_TARGET_HOURS] ?: 3.0f,
+                enableCoreHours = enableCore,
+                plannerMode = plannerMode,
+                customTargetHours = preferences[CUSTOM_TARGET_HOURS] ?: preferences[floatPreferencesKey("custom_friday_target_hours")] ?: 3.0f,
                 coreTimes = mapOf(
                     java.time.DayOfWeek.MONDAY to WorkTimeConfig.CoreTime(
                         LocalTime.of(
@@ -148,9 +150,9 @@ class UserPreferencesRepository private constructor(
     suspend fun setWorkTimeConfig(config: WorkTimeConfig) {
         dataStore.edit { preferences ->
             preferences[WEEKLY_TARGET_HOURS] = config.weeklyTargetHours
-            preferences[ENABLE_KERNZEITEN] = config.enableKernzeiten
-            preferences[FRIDAY_TARGET_MODE] = config.fridayTargetMode.name
-            preferences[CUSTOM_FRIDAY_TARGET_HOURS] = config.customFridayTargetHours
+            preferences[ENABLE_CORE_HOURS] = config.enableCoreHours
+            preferences[PLANNER_MODE] = config.plannerMode.name
+            preferences[CUSTOM_TARGET_HOURS] = config.customTargetHours
             
             config.coreTimes[java.time.DayOfWeek.MONDAY]?.let { core ->
                 preferences[MON_START_HOUR] = core.start?.hour ?: 9

@@ -7,8 +7,8 @@ data class WorkTimeConfig(
     /** Target hours per week */
     val weeklyTargetHours: Float = 38.5f,
     
-    /** Whether Kernzeiten (core hours) rules are enabled */
-    val enableKernzeiten: Boolean = true,
+    /** Whether mandatory core hours rules are enabled */
+    val enableCoreHours: Boolean = true,
 
     /** Strategy for schedule planning across remaining days */
     val plannerMode: SchedulePlannerMode = SchedulePlannerMode.BALANCED,
@@ -16,7 +16,7 @@ data class WorkTimeConfig(
     /** Custom net hours target for specified focus days */
     val customTargetHours: Float = 3.0f,
     
-    /** Core times (Kernzeiten) per day of week */
+    /** Core times per day of week */
     val coreTimes: Map<DayOfWeek, CoreTime> = mapOf(
         DayOfWeek.MONDAY to CoreTime(LocalTime.of(9, 30), LocalTime.of(16, 0)),
         DayOfWeek.TUESDAY to CoreTime(LocalTime.of(9, 30), LocalTime.of(16, 0)),
@@ -38,7 +38,8 @@ data class WorkTimeConfig(
         CUSTOM          // Custom user-defined target allocation
     }
 
-    // Alias for backward compatibility
+    // Aliases for compatibility
+    val enableKernzeiten: Boolean get() = enableCoreHours
     val fridayTargetMode: SchedulePlannerMode get() = plannerMode
     val customFridayTargetHours: Float get() = customTargetHours
 
