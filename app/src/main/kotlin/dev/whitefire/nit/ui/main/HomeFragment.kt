@@ -224,7 +224,7 @@ class HomeFragment : Fragment() {
         val currentDate = viewModel.currentDate.value
         val config = viewModel.workTimeConfig.value ?: return
 
-        val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d", Locale.getDefault())
+        val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d", Locale.ENGLISH)
         tvDate.text = currentDate.format(formatter)
 
         val start = viewModel.startTime.value
