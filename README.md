@@ -29,7 +29,7 @@ It's a spreadsheet that doesn't require Excel skills. Set your target hours in S
 
 ## Vibecoded
 
-This project was built by [Mistral Vibe](https://vibe.mistral.ai) - an AI coding agent that's surprisingly good at Kotlin and bad at UX design. The architecture is clean, the commits are atomic, and no, it won't start a timer on you.
+This project was originally built by [Mistral Vibe](https://vibe.mistral.ai) and later overhauled using **Antigravity** (powered by Gemini) — because even AI agents need pair programming to fix their own bad UX. The architecture is clean, the commits are atomic, and no, it won't start a timer on you.
 
 ## Tech Stack
 
