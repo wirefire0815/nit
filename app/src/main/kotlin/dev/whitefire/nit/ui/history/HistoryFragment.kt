@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dev.whitefire.nit.NitApplication
 import dev.whitefire.nit.R
-import dev.whitefire.nit.domain.model.WorkDay
 import kotlinx.coroutines.launch
 
 class HistoryFragment : Fragment() {
@@ -52,7 +51,7 @@ class HistoryFragment : Fragment() {
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = WorkDayAdapter(
+        recyclerView.adapter = WeeklyGroupAdapter(
             onDeleteClick = { workDay ->
                 viewModel.deleteWorkDay(workDay)
             }
@@ -63,9 +62,9 @@ class HistoryFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.workDays.collect { workDays ->
-                        (recyclerView.adapter as? WorkDayAdapter)?.submitList(workDays)
-                        updateStats(workDays)
+                    viewModel.weeklyGroups.collect { groups ->
+                        (recyclerView.adapter as? WeeklyGroupAdapter)?.submitList(groups)
+                        updateHeaderStats(groups)
                     }
                 }
                 launch {
@@ -77,10 +76,17 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    private fun updateStats(workDays: List<WorkDay>) {
-        val stats = viewModel.getWeekStats(workDays)
-        val totalMins = Math.round(stats.totalHours * 60)
+    private fun updateHeaderStats(groups: List<HistoryViewModel.WeeklyHistoryGroup>) {
+        val totalHours = groups.sumOf { it.totalHours.toDouble() }.toFloat()
+        val totalDays = groups.sumOf { it.daysWorked }
+        val totalMins = Math.round(totalHours * 60)
+
         tvTotalHours.text = String.format("%02dh %02dm", totalMins / 60, totalMins % 60)
-        tvDaysWorked.text = "${stats.daysWorked} days"
+        tvDaysWorked.text = "$totalDays days"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadHistory()
     }
 }

@@ -9,26 +9,49 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 class HistoryViewModel(
     private val workDayRepository: WorkDayRepository
 ) : ViewModel() {
 
-    private val _workDays = MutableStateFlow<List<WorkDay>>(emptyList())
-    val workDays: StateFlow<List<WorkDay>> = _workDays.asStateFlow()
+    private val _weeklyGroups = MutableStateFlow<List<WeeklyHistoryGroup>>(emptyList())
+    val weeklyGroups: StateFlow<List<WeeklyHistoryGroup>> = _weeklyGroups.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
-        loadWorkDays()
+        loadHistory()
     }
 
-    private fun loadWorkDays() {
+    fun loadHistory() {
         viewModelScope.launch {
             _isLoading.value = true
-            val days = workDayRepository.getRecentWorkDays(50)
-            _workDays.value = days.sortedByDescending { it.date }
+            val days = workDayRepository.getRecentWorkDays(100)
+            
+            val groups = days.groupBy { WorkWeek.fromDate(it.date).startDate }
+                .map { (weekStart, weekDays) ->
+                    val weekEnd = weekStart.plusDays(6)
+                    val weekNumber = weekStart.get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear())
+                    val totalHours = weekDays.sumOf { it.effectiveHours.toDouble() }.toFloat()
+                    val daysWorked = weekDays.count { it.isComplete }
+                    
+                    WeeklyHistoryGroup(
+                        startDate = weekStart,
+                        endDate = weekEnd,
+                        weekNumber = weekNumber,
+                        totalHours = totalHours,
+                        daysWorked = daysWorked,
+                        days = weekDays.sortedBy { it.date }
+                    )
+                }
+                .sortedByDescending { it.startDate }
+
+            _weeklyGroups.value = groups
             _isLoading.value = false
         }
     }
@@ -36,22 +59,28 @@ class HistoryViewModel(
     fun deleteWorkDay(workDay: WorkDay) {
         viewModelScope.launch {
             workDayRepository.deleteWorkDayById(workDay.id)
-            loadWorkDays()
+            loadHistory()
         }
     }
 
-    fun getWeekStats(workDays: List<WorkDay>): SimpleWeekStats {
-        val totalHours = workDays.sumOf { it.effectiveHours.toDouble() }.toFloat()
-        val daysWorked = workDays.count { it.isComplete }
-        val totalDays = workDays.size
-        return SimpleWeekStats(totalHours, daysWorked, totalDays)
-    }
-
-    data class SimpleWeekStats(
+    data class WeeklyHistoryGroup(
+        val startDate: LocalDate,
+        val endDate: LocalDate,
+        val weekNumber: Int,
         val totalHours: Float,
         val daysWorked: Int,
-        val totalDays: Int
-    )
+        val days: List<WorkDay>
+    ) {
+        fun getFormattedTitle(): String {
+            val fmt = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH)
+            return "Week $weekNumber • ${startDate.format(fmt)} – ${endDate.format(fmt)}"
+        }
+
+        fun getFormattedTotalHours(): String {
+            val totalMins = Math.round(totalHours * 60)
+            return String.format("%02dh %02dm", totalMins / 60, totalMins % 60)
+        }
+    }
 }
 
 class HistoryViewModelFactory(

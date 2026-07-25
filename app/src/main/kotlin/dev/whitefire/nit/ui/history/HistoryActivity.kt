@@ -1,9 +1,7 @@
 package dev.whitefire.nit.ui.history
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -14,10 +12,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.button.MaterialButton
 import dev.whitefire.nit.NitApplication
 import dev.whitefire.nit.R
-import dev.whitefire.nit.domain.model.WorkDay
 import kotlinx.coroutines.launch
 
 class HistoryActivity : AppCompatActivity() {
@@ -50,7 +46,7 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = WorkDayAdapter(
+        recyclerView.adapter = WeeklyGroupAdapter(
             onDeleteClick = { workDay ->
                 viewModel.deleteWorkDay(workDay)
             }
@@ -61,9 +57,9 @@ class HistoryActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.workDays.collect { workDays ->
-                        (recyclerView.adapter as? WorkDayAdapter)?.submitList(workDays)
-                        updateStats(workDays)
+                    viewModel.weeklyGroups.collect { groups ->
+                        (recyclerView.adapter as? WeeklyGroupAdapter)?.submitList(groups)
+                        updateHeaderStats(groups)
                     }
                 }
                 launch {
@@ -75,55 +71,17 @@ class HistoryActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateStats(workDays: List<WorkDay>) {
-        val stats = viewModel.getWeekStats(workDays)
-        val totalMins = Math.round(stats.totalHours * 60)
+    private fun updateHeaderStats(groups: List<HistoryViewModel.WeeklyHistoryGroup>) {
+        val totalHours = groups.sumOf { it.totalHours.toDouble() }.toFloat()
+        val totalDays = groups.sumOf { it.daysWorked }
+        val totalMins = Math.round(totalHours * 60)
+
         tvTotalHours.text = String.format("%02dh %02dm", totalMins / 60, totalMins % 60)
-        tvDaysWorked.text = "${stats.daysWorked} days"
-    }
-}
-
-class WorkDayAdapter(
-    private val onDeleteClick: (WorkDay) -> Unit
-) : androidx.recyclerview.widget.ListAdapter<WorkDay, WorkDayViewHolder>(WorkDayDiffCallback()) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WorkDayViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_work_day, parent, false)
-        return WorkDayViewHolder(view, onDeleteClick)
+        tvDaysWorked.text = "$totalDays days"
     }
 
-    override fun onBindViewHolder(holder: WorkDayViewHolder, position: Int) {
-        holder.bind(getItem(position))
-    }
-}
-
-class WorkDayViewHolder(
-    itemView: View,
-    private val onDeleteClick: (WorkDay) -> Unit
-) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-
-    private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
-    private val tvDuration: TextView = itemView.findViewById(R.id.tvDuration)
-    private val tvNotes: TextView = itemView.findViewById(R.id.tvNotes)
-    private val btnDelete: MaterialButton = itemView.findViewById(R.id.btnDelete)
-
-    fun bind(workDay: WorkDay) {
-        tvDate.text = workDay.getDateDisplay()
-        
-        val netMins = workDay.netDuration?.toMinutes()?.toInt() ?: 0
-        tvDuration.text = String.format("Net Hours: %02dh %02dm", netMins / 60, netMins % 60)
-        tvNotes.text = workDay.notes.ifEmpty { "No notes" }
-
-        btnDelete.setOnClickListener { onDeleteClick(workDay) }
-    }
-}
-
-class WorkDayDiffCallback : androidx.recyclerview.widget.DiffUtil.ItemCallback<WorkDay>() {
-    override fun areItemsTheSame(oldItem: WorkDay, newItem: WorkDay): Boolean {
-        return oldItem.id == newItem.id
-    }
-
-    override fun areContentsTheSame(oldItem: WorkDay, newItem: WorkDay): Boolean {
-        return oldItem == newItem
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadHistory()
     }
 }
