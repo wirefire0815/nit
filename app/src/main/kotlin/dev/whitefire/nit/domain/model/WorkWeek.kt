@@ -149,7 +149,7 @@ data class WorkWeek(
 
         val remainingWorkDays = weekMonToFri.filter { !it.isBefore(currentDate) }
         if (remainingWorkDays.isEmpty()) {
-            return ScheduleProjection(0f, 0f, 0f, 0, "Week target complete!")
+            return ScheduleProjection(0f, 0f, 0f, 0, "Weekly goal achieved!")
         }
 
         fun formatHours(h: Float): String {
@@ -168,35 +168,47 @@ data class WorkWeek(
                 Tuple4(dailyAvg, dailyAvg, dailyAvg, text)
             }
             WorkTimeConfig.SchedulePlannerMode.MIN_CORE_HOURS -> {
+                val fridayDate = startDate.plusDays(4)
+                val existingFriday = getWorkDay(fridayDate)
+                
                 val friCore = config.coreTimes[DayOfWeek.FRIDAY]
-                val fTarget = if (containsFriday && friCore?.start != null && friCore.end != null) {
+                val fTarget = if (existingFriday != null && existingFriday.effectiveHours > 0f) {
+                    existingFriday.effectiveHours
+                } else if (friCore?.start != null && friCore.end != null) {
                     java.time.Duration.between(friCore.start, friCore.end).toMinutes().toFloat() / 60f
                 } else 3.0f
 
-                val nonFriCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
-                val nfTarget = if (nonFriCount > 0) {
-                    (totalRemaining - fTarget).coerceAtLeast(0f) / nonFriCount
-                } else 0f
-
-                val tTarget = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) fTarget else nfTarget
-                val text = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) {
-                    "Friday target: ${formatHours(tTarget)} to finish weekly goal of ${config.weeklyTargetHours}h."
-                } else if (containsFriday && nonFriCount > 0) {
-                    "Work ${formatHours(nfTarget)} today & remaining days to finish core hours on Friday (${formatHours(fTarget)})."
+                if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) {
+                    // If today is Friday, today's target is whatever is remaining for the week!
+                    val tTarget = totalRemaining
+                    val text = "Friday target: ${formatHours(tTarget)} to finish weekly goal of ${config.weeklyTargetHours}h."
+                    Tuple4(tTarget, tTarget, 0f, text)
                 } else {
-                    "Suggested target: ${formatHours(tTarget)} for remaining ${remainingWorkDays.size} day(s)."
+                    val nonFriCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
+                    val nfTarget = if (nonFriCount > 0) {
+                        (totalRemaining - fTarget).coerceAtLeast(0f) / nonFriCount
+                    } else 0f
+                    val tTarget = nfTarget
+                    val dayStr = if (nonFriCount > 1) "today & remaining days" else "today"
+                    val text = "Work ${formatHours(nfTarget)} $dayStr to leave early on Friday after ${formatHours(fTarget)}."
+                    Tuple4(tTarget, fTarget, nfTarget, text)
                 }
-                Tuple4(tTarget, fTarget, nfTarget, text)
             }
             WorkTimeConfig.SchedulePlannerMode.CUSTOM -> {
                 val cFri = config.customTargetHours
-                val nonFriCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
-                val nfTarget = if (nonFriCount > 0) {
-                    (totalRemaining - cFri).coerceAtLeast(0f) / nonFriCount
-                } else 0f
-                val tTarget = if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) cFri else nfTarget
-                val text = "Work ${formatHours(tTarget)} today (${remainingWorkDays.size} day(s) remaining)."
-                Tuple4(tTarget, cFri, nfTarget, text)
+                if (currentDate.dayOfWeek == DayOfWeek.FRIDAY) {
+                    val tTarget = totalRemaining
+                    val text = "Friday target: ${formatHours(tTarget)}."
+                    Tuple4(tTarget, tTarget, 0f, text)
+                } else {
+                    val nonFriCount = remainingWorkDays.count { it.dayOfWeek != DayOfWeek.FRIDAY }
+                    val nfTarget = if (nonFriCount > 0) {
+                        (totalRemaining - cFri).coerceAtLeast(0f) / nonFriCount
+                    } else 0f
+                    val tTarget = nfTarget
+                    val text = "Work ${formatHours(tTarget)} today (${remainingWorkDays.size} day(s) remaining)."
+                    Tuple4(tTarget, cFri, nfTarget, text)
+                }
             }
         }
 
@@ -218,8 +230,6 @@ data class WorkWeek(
         fun currentWeek(config: WorkTimeConfig = DEFAULT_WORK_CONFIG): WorkWeek {
             val today = LocalDate.now()
             val weekFields = WeekFields.of(Locale.getDefault())
-            val weekNumber = today.get(weekFields.weekOfWeekBasedYear())
-            // Find the Monday of the current week
             val startDate = today.minusDays(today.dayOfWeek.value.toLong() - DayOfWeek.MONDAY.value.toLong())
             return WorkWeek(startDate, emptyList(), config)
         }
@@ -228,8 +238,6 @@ data class WorkWeek(
          * Create a WorkWeek from a date
          */
         fun fromDate(date: LocalDate, config: WorkTimeConfig = DEFAULT_WORK_CONFIG): WorkWeek {
-            val weekFields = WeekFields.of(Locale.getDefault())
-            // Find the Monday of the week containing this date
             val startDate = date.minusDays(date.dayOfWeek.value.toLong() - DayOfWeek.MONDAY.value.toLong())
             return WorkWeek(startDate, emptyList(), config)
         }
@@ -239,12 +247,8 @@ data class WorkWeek(
          */
         fun fromYearWeek(year: Int, week: Int, config: WorkTimeConfig = DEFAULT_WORK_CONFIG): WorkWeek? {
             return try {
-                val weekFields = WeekFields.of(Locale.getDefault())
-                // Create a date for the first day of the year
                 val firstDay = LocalDate.of(year, 1, 1)
-                // Find the first Monday of the year
                 val firstMonday = firstDay.plusDays(((DayOfWeek.MONDAY.value - firstDay.dayOfWeek.value + 7) % 7).toLong())
-                // Add (week-1) weeks to get to the start of the desired week
                 val startDate = firstMonday.plusWeeks((week - 1).toLong())
                 WorkWeek(startDate, emptyList(), config)
             } catch (e: Exception) {

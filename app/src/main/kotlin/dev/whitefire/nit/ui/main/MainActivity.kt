@@ -75,6 +75,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvThuHours: TextView
     private lateinit var tvFriHours: TextView
 
+    private lateinit var cardMon: com.google.android.material.card.MaterialCardView
+    private lateinit var cardTue: com.google.android.material.card.MaterialCardView
+    private lateinit var cardWed: com.google.android.material.card.MaterialCardView
+    private lateinit var cardThu: com.google.android.material.card.MaterialCardView
+    private lateinit var cardFri: com.google.android.material.card.MaterialCardView
+
     private var onboardingDialogShown = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,9 +123,23 @@ class MainActivity : AppCompatActivity() {
         tvWedHours = findViewById(R.id.tvWedHours)
         tvThuHours = findViewById(R.id.tvThuHours)
         tvFriHours = findViewById(R.id.tvFriHours)
+        cardMon = findViewById(R.id.cardMon)
+        cardTue = findViewById(R.id.cardTue)
+        cardWed = findViewById(R.id.cardWed)
+        cardThu = findViewById(R.id.cardThu)
+        cardFri = findViewById(R.id.cardFri)
     }
 
     private fun setupListeners() {
+        val dayCards = listOf(cardMon, cardTue, cardWed, cardThu, cardFri)
+        dayCards.forEachIndexed { index, card ->
+            card.setOnClickListener {
+                val weekStart = viewModel.currentWeek.value?.startDate ?: LocalDate.now()
+                val targetDate = weekStart.plusDays(index.toLong())
+                viewModel.setDate(targetDate)
+            }
+        }
+
         btnStartTime.setOnClickListener {
             btnStartTime.showTimePicker(this, viewModel.startTime.value ?: LocalTime.of(9, 30)) { time ->
                 viewModel.setStartTime(time)
@@ -313,9 +333,17 @@ class MainActivity : AppCompatActivity() {
         progressBar.progress = stats.progressPercentage.toInt()
         tvProgressText.text = "${stats.progressPercentage.toInt()}% of weekly goal"
 
-        // Day breakdown
+        // Day breakdown & active card selection
         val weekDist = viewModel.getWeekDistribution()
         val dayViews = listOf(tvMonHours, tvTueHours, tvWedHours, tvThuHours, tvFriHours)
+        val dayCards = listOf(cardMon, cardTue, cardWed, cardThu, cardFri)
+        val currentDay = viewModel.currentDate.value
+        val weekStart = viewModel.currentWeek.value?.startDate ?: LocalDate.now()
+        val activeColor = getColor(R.color.primary_slate)
+        val defaultBorderColor = getColor(R.color.surface_border)
+        val borderWidthActive = (2 * resources.displayMetrics.density).toInt()
+        val borderWidthDefault = (1 * resources.displayMetrics.density).toInt()
+
         for (i in dayViews.indices) {
             val dist = weekDist.getOrNull(i)
             if (dist != null && dist.hours > 0f) {
@@ -323,6 +351,15 @@ class MainActivity : AppCompatActivity() {
                 dayViews[i].text = String.format("%02dh %02dm", dm / 60, dm % 60)
             } else {
                 dayViews[i].text = "--:--"
+            }
+
+            val cardDate = weekStart.plusDays(i.toLong())
+            if (cardDate == currentDay) {
+                dayCards[i].strokeColor = activeColor
+                dayCards[i].strokeWidth = borderWidthActive
+            } else {
+                dayCards[i].strokeColor = defaultBorderColor
+                dayCards[i].strokeWidth = borderWidthDefault
             }
         }
     }
